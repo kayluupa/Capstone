@@ -1,7 +1,11 @@
 # Capstone
- CSCE 4905.501
+## CSCE 4905.501
+### Group 6- The Algorithm Avengers
 
-contributors:
+```
+Contributors:
 Kayla Singletary
 Malik Karunanayake
 Marlen Carreno
+Mohammad Saleh
+```
