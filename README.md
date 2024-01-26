@@ -2,6 +2,6 @@
  CSCE 4905.501
 
 contributors:
-Kayla Singletary
-Malik Karunanayake
+Kayla Singletary,
+Malik Karunanayake,
 Marlen Carreno
