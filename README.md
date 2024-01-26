@@ -4,6 +4,7 @@
 
 ```
 Contributors:
+Hasan Md Walid
 Kayla Singletary
 Malik Karunanayake
 Marlen Carreno
