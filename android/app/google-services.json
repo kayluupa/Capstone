@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "467017705192",
+    "project_id": "algorithm-avengers-3008d",
+    "storage_bucket": "algorithm-avengers-3008d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:467017705192:android:86929f00a7ce121e5a4b5d",
+        "android_client_info": {
+          "package_name": "com.example.signup_rest_login"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxjkCTWz7UKnyf_4UIeEn8zegBM-X0_2A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
