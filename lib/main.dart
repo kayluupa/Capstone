@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (_, child) {
         return MaterialApp(
-          title: 'Login & Signup App',
+          title: 'Meet Me Halfway App',
           theme: ThemeData(
             useMaterial3: true,
           ),
