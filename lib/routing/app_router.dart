@@ -5,7 +5,7 @@ import '../screens/forget/ui/forget_screen.dart';
 import '../screens/account/ui/account_screen.dart';
 import '../screens/login/ui/login_screen.dart';
 import '../screens/signup/ui/sign_up_sceen.dart';
-import '../screens/home/ui/home_sceen.dart';
+import '../screens/home/ui/home_screen.dart';
 import 'routes.dart';
 
 class AppRouter {
