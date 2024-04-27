@@ -1,4 +1,4 @@
-name: meet_me_halfway
+name: capstone
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -40,6 +40,7 @@ dependencies:
   gap: ^3.0.1
   google_sign_in: ^6.2.1
   rive: ^0.12.4
+  table_calendar: ^3.1.1
 
 dev_dependencies:
   flutter_lints: ^3.0.1
