@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first, constant_identifier_names
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -231,6 +232,15 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
             );
             await _auth.currentUser!.updateDisplayName(nameController.text);
             await _auth.currentUser!.sendEmailVerification();
+
+            final user = FirebaseFirestore.instance
+                .collection('users')
+                .doc(_auth.currentUser!.uid);
+            await user.set({
+              'name': nameController.text,
+              'email': emailController.text,
+            });
+            user.collection('meetings');
 
             await _auth.signOut();
             if (!context.mounted) return;

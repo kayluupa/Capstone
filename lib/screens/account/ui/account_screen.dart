@@ -48,7 +48,7 @@ class _AccountScreenState extends State<AccountScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(
+              /*SizedBox(
                 height: 200,
                 width: 200,
                 child: FirebaseAuth.instance.currentUser!.photoURL == null
@@ -58,7 +58,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         image: FirebaseAuth.instance.currentUser!.photoURL!,
                         fit: BoxFit.cover,
                       ),
-              ),
+              ),*/
               Text(
                 FirebaseAuth.instance.currentUser!.displayName!,
                 style: TextStyles.font15DarkBlue500Weight
@@ -69,7 +69,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 textStyle: TextStyles.font15DarkBlue500Weight,
                 onPressed: () async {
                   try {
-                    GoogleSignIn().disconnect();
+                    //GoogleSignIn().disconnect();
                     FirebaseAuth.instance.signOut();
                     context.pushNamedAndRemoveUntil(
                       Routes.loginScreen,
