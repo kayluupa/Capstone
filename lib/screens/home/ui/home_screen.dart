@@ -1,3 +1,4 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -5,10 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/widgets/no_internet.dart';
 import '../../../theming/colors.dart';
-import '/helpers/extensions.dart';
 import '/routing/routes.dart';
-import '/theming/styles.dart';
-import '../../../core/widgets/app_text_button.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,6 +26,31 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Meet Me Halfway',
+          textAlign: TextAlign.center,
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.account_circle),
+            onPressed: () async {
+              try {
+                Navigator.pushNamed(context, Routes.accountScreen);
+              } catch (e) {
+                await AwesomeDialog(
+                  context: context,
+                  dialogType: DialogType.info,
+                  animType: AnimType.rightSlide,
+                  title: 'Account profile error',
+                  desc: e.toString(),
+                ).show();
+              }
+            },
+          ),
+        ],
+      ),
       body: OfflineBuilder(
         connectivityBuilder: (
           BuildContext context,
@@ -53,23 +76,21 @@ class _HomeScreenState extends State<HomeScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              const Text("Calendar"),
-              Container(
-                child: TableCalendar (
-                  locale: "en_US",
-                  headerStyle: const HeaderStyle(formatButtonVisible: false, titleCentered: true),
-                  //avaibleGestures: AvailableGestures.all,
-                  selectedDayPredicate: (day) => isSameDay(day, today),
-                  focusedDay: today,
-                  firstDay: DateTime.utc(2024, 1, 1),
-                  lastDay: DateTime.utc(2024, 12, 31),
-                  onDaySelected: _onDaySelected,
-                ),
+              TableCalendar(
+                locale: "en_US",
+                headerStyle: const HeaderStyle(
+                    formatButtonVisible: false, titleCentered: true),
+                //avaibleGestures: AvailableGestures.all,
+                selectedDayPredicate: (day) => isSameDay(day, today),
+                focusedDay: today,
+                firstDay: DateTime.utc(2024, 1, 1),
+                lastDay: DateTime.utc(2024, 12, 31),
+                onDaySelected: _onDaySelected,
               ),
             ],
           ),
         ),
-      ),  
+      ),
     );
   }
 }
