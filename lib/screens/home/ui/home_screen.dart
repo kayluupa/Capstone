@@ -1,9 +1,7 @@
-import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../core/widgets/no_internet.dart';
 import '../../../theming/colors.dart';
@@ -20,6 +18,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  DateTime today = DateTime.now();
+  void _onDaySelected(DateTime day, DateTime focusedDay) {
+    setState(() {
+      today = day;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,55 +46,30 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  SafeArea _homePage(BuildContext context) {
+  Widget _homePage(BuildContext context) {
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 15.w),
         child: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(
-                height: 200,
-                width: 200,
-                child: FirebaseAuth.instance.currentUser!.photoURL == null
-                    ? Image.asset('assets/images/placeholder.png')
-                    : FadeInImage.assetNetwork(
-                        placeholder: 'assets/images/loading.gif',
-                        image: FirebaseAuth.instance.currentUser!.photoURL!,
-                        fit: BoxFit.cover,
-                      ),
-              ),
-              Text(
-                FirebaseAuth.instance.currentUser!.displayName!,
-                style: TextStyles.font15DarkBlue500Weight
-                    .copyWith(fontSize: 30.sp),
-              ),
-              AppTextButton(
-                buttonText: 'Sign Out',
-                textStyle: TextStyles.font15DarkBlue500Weight,
-                onPressed: () async {
-                  try {
-                    GoogleSignIn().disconnect();
-                    FirebaseAuth.instance.signOut();
-                    context.pushNamedAndRemoveUntil(
-                      Routes.loginScreen,
-                      predicate: (route) => false,
-                    );
-                  } catch (e) {
-                    await AwesomeDialog(
-                      context: context,
-                      dialogType: DialogType.info,
-                      animType: AnimType.rightSlide,
-                      title: 'Sign out error',
-                      desc: e.toString(),
-                    ).show();
-                  }
-                },
+              const Text("Calendar"),
+              Container(
+                child: TableCalendar (
+                  locale: "en_US",
+                  headerStyle: const HeaderStyle(formatButtonVisible: false, titleCentered: true),
+                  //avaibleGestures: AvailableGestures.all,
+                  selectedDayPredicate: (day) => isSameDay(day, today),
+                  focusedDay: today,
+                  firstDay: DateTime.utc(2024, 1, 1),
+                  lastDay: DateTime.utc(2024, 12, 31),
+                  onDaySelected: _onDaySelected,
+                ),
               ),
             ],
           ),
         ),
-      ),
+      ),  
     );
   }
 }
