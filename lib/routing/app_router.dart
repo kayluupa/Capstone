@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../screens/create_password/ui/create_password.dart';
 import '../screens/forget/ui/forget_screen.dart';
-import '../screens/home/ui/home_sceren.dart';
+import '../screens/home/ui/home_screen.dart';
 import '../screens/login/ui/login_screen.dart';
 import '../screens/signup/ui/sign_up_sceen.dart';
 import 'routes.dart';
