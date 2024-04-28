@@ -6,6 +6,7 @@ import '../screens/account/ui/account_screen.dart';
 import '../screens/login/ui/login_screen.dart';
 import '../screens/signup/ui/sign_up_sceen.dart';
 import '../screens/home/ui/home_screen.dart';
+import '../screens/map/ui/map_screen.dart';
 import 'routes.dart';
 
 class AppRouter {
@@ -41,6 +42,10 @@ class AppRouter {
       case Routes.loginScreen:
         return MaterialPageRoute(
           builder: (_) => const LoginScreen(),
+        );
+      case Routes.mapScreen:
+        return MaterialPageRoute(
+          builder: (_) => const MapScreen(),
         );
     }
     return null;

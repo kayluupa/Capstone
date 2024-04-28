@@ -87,6 +87,24 @@ class _HomeScreenState extends State<HomeScreen> {
                 lastDay: DateTime.utc(2024, 12, 31),
                 onDaySelected: _onDaySelected,
               ),
+              TextButton(
+                style: TextButton.styleFrom(
+                    textStyle: const TextStyle(fontSize: 30)),
+                onPressed: () async {
+                  try {
+                    Navigator.pushNamed(context, Routes.mapScreen);
+                  } catch (e) {
+                    await AwesomeDialog(
+                      context: context,
+                      dialogType: DialogType.info,
+                      animType: AnimType.rightSlide,
+                      title: 'Map error',
+                      desc: e.toString(),
+                    ).show();
+                  }
+                },
+                child: const Text('Map'),
+              ),
             ],
           ),
         ),

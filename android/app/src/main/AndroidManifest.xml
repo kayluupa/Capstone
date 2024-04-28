@@ -3,6 +3,10 @@
         android:label="signup_rest_login"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <meta-data 
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyBtOyOc0k0pQwnUgjIf_K4sGdPApdI-WUY"
+        />
         <activity
             android:name=".MainActivity"
             android:exported="true"
