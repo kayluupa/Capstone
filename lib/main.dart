@@ -25,14 +25,16 @@ void main() async {
       }
     },
   );
+  DateTime today = DateTime.now(); // Define today here
   await ScreenUtil.ensureScreenSize();
-  runApp(MyApp(router: AppRouter()));
+  runApp(MyApp(router: AppRouter(), today: today)); // Pass today to MyApp
 }
 
 class MyApp extends StatelessWidget {
   final AppRouter router;
+  final DateTime today;
 
-  const MyApp({super.key, required this.router});
+  const MyApp({super.key, required this.router, required this.today});
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +48,7 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(
             useMaterial3: true,
           ),
-          onGenerateRoute: router.generateRoute,
+          onGenerateRoute: (settings) => router.generateRoute(settings, today),
           debugShowCheckedModeBanner: false,
           initialRoute: initialRoute,
         );
@@ -54,3 +56,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
