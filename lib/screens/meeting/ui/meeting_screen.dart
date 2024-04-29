@@ -45,7 +45,6 @@ class MeetingScreenState extends State<MeetingScreen> {
                     widget.day.year, widget.day.month, widget.day.day + 1)),
               )
               .get();
-      print(widget.day);
 
       // Convert Firestore data to Dart objects
       meetings =
