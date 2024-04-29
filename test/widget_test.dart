@@ -14,8 +14,9 @@ import 'package:capstone/routing/app_router.dart';
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
+    DateTime today = DateTime.now();
 
-    await tester.pumpWidget(MyApp(router: AppRouter()));
+    await tester.pumpWidget(MyApp(router: AppRouter(), today: today));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

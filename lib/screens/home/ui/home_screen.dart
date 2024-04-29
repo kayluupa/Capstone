@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/widgets/no_internet.dart';
 import '../../../theming/colors.dart';
+import '../../meeting/ui/meeting_screen.dart';
 import '/routing/routes.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -21,6 +22,10 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       today = day;
     });
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => MeetingScreen(day: day)),
+    );
   }
 
   @override

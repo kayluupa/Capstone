@@ -236,11 +236,11 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
             final user = FirebaseFirestore.instance
                 .collection('users')
                 .doc(_auth.currentUser!.uid);
+            user.collection('meetings').add({});
             await user.set({
               'name': nameController.text,
               'email': emailController.text,
             });
-            user.collection('meetings');
 
             await _auth.signOut();
             if (!context.mounted) return;
