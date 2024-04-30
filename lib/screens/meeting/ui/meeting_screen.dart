@@ -8,9 +8,15 @@ import '/routing/routes.dart';
 class Meeting {
   final String title;
   final String description;
+  final String lat;
+  final String lng;
   // Add other properties of a meeting here
 
-  Meeting({required this.title, required this.description});
+  Meeting(
+      {required this.title,
+      required this.description,
+      required this.lat,
+      required this.lng});
 
   // Factory method to convert Firestore data to Dart object
   factory Meeting.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -18,6 +24,8 @@ class Meeting {
     return Meeting(
       title: data?['title'],
       description: data?['description'],
+      lat: data?['lat'],
+      lng: data?['lng'],
       // Initialize other properties here
     );
   }
@@ -121,9 +129,23 @@ class MeetingScreenState extends State<MeetingScreen> {
         itemCount: meetings.length,
         itemBuilder: (context, index) {
           return ListTile(
-            title: Text(meetings[index].title),
-            subtitle: Text(meetings[index].description),
-          );
+              title: Text(meetings[index].title),
+              subtitle: Text(meetings[index].description),
+              trailing: IconButton(
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    Routes.mapScreen,
+                    arguments: {
+                      'latitude': meetings[index].lat,
+                      'longitude': meetings[index].lng,
+                      'title': meetings[index].title,
+                      'description': meetings[index].description,
+                    },
+                  );
+                },
+                icon: const Icon(Icons.map),
+              ));
         },
       ),
     );

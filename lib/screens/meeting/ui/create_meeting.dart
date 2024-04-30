@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class CreateMeeting extends StatefulWidget {
   final DateTime day;
@@ -13,21 +15,35 @@ class CreateMeeting extends StatefulWidget {
   CreateMeetingState createState() => CreateMeetingState();
 }
 
+class Place {
+  final String placeId;
+  final String description;
+
+  Place({required this.placeId, required this.description});
+}
+
 class CreateMeetingState extends State<CreateMeeting> {
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
+  late TextEditingController _locationController;
+
+  List<Place> searchResults = [];
+  String _latitude = "";
+  String _longitude = "";
 
   @override
   void initState() {
     super.initState();
     _titleController = TextEditingController();
     _descriptionController = TextEditingController();
+    _locationController = TextEditingController();
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _locationController.dispose();
     super.dispose();
   }
 
@@ -45,6 +61,9 @@ class CreateMeetingState extends State<CreateMeeting> {
       'description': _descriptionController.text,
       // Add other meeting details as needed
       'date': widget.day.toUtc().add(const Duration(hours: 5)),
+      'lat': _latitude,
+      'lng': _longitude,
+      'location': _locationController.text,
     });
 
     widget.refreshMeetingsList();
@@ -79,6 +98,36 @@ class CreateMeetingState extends State<CreateMeeting> {
               maxLines: null,
             ),
             const SizedBox(height: 16),
+            TextFormField(
+              controller: _locationController,
+              onChanged: (value) {
+                if (value.isNotEmpty) {
+                  searchPlaces(value);
+                  _locationController.text;
+                }
+              },
+              textInputAction: TextInputAction.search,
+              decoration: const InputDecoration(hintText: "Enter Location"),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: searchResults.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(searchResults[index].description),
+                    onTap: () {
+                      selectPlace(searchResults[index].placeId);
+                      _locationController.text =
+                          searchResults[index].description;
+                      setState(() {
+                        searchResults.clear(); // Clear the search results
+                      });
+                    },
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () async {
                 // Show a loading indicator
@@ -106,5 +155,48 @@ class CreateMeetingState extends State<CreateMeeting> {
         ),
       ),
     );
+  }
+
+  Future<void> searchPlaces(String query) async {
+    String apiKey = "AIzaSyBtOyOc0k0pQwnUgjIf_K4sGdPApdI-WUY";
+    String url =
+        'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$query&types=geocode&key=$apiKey';
+    var response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      var data = json.decode(response.body);
+      if (data['status'] == 'OK') {
+        setState(() {
+          searchResults = (data['predictions'] as List)
+              .map((place) => Place(
+                    placeId: place['place_id'],
+                    description: place['description'],
+                  ))
+              .toList();
+        });
+      }
+    }
+  }
+
+  Future<void> selectPlace(String placeId) async {
+    String apiKey = 'AIzaSyBtOyOc0k0pQwnUgjIf_K4sGdPApdI-WUY';
+    String url =
+        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=geometry&key=$apiKey';
+    var response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      var data = json.decode(response.body);
+      if (data['status'] == 'OK') {
+        var location = data['result']['geometry']['location'];
+        // TextEditingController name = data['result']['name'];
+        // setState(() {
+        //   _locationController = name;
+        // });
+        double lat = location['lat'];
+        double lng = location['lng'];
+        setState(() {
+          _latitude = lat.toString();
+          _longitude = lng.toString();
+        });
+      }
+    }
   }
 }
