@@ -1,6 +1,27 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import '/routing/routes.dart';
+
+class Meeting {
+  final String title;
+  final String description;
+  // Add other properties of a meeting here
+
+  Meeting({required this.title, required this.description});
+
+  // Factory method to convert Firestore data to Dart object
+  factory Meeting.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+    final data = doc.data();
+    return Meeting(
+      title: data?['title'],
+      description: data?['description'],
+      // Initialize other properties here
+    );
+  }
+}
 
 class MeetingScreen extends StatefulWidget {
   final DateTime day;
@@ -84,35 +105,41 @@ class MeetingScreenState extends State<MeetingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Meetings on ${widget.day.toString()}'),
-        ),
-        body: ListView.builder(
-          itemCount: meetings.length,
-          itemBuilder: (context, index) {
-            return ListTile(
-              title: Text(meetings[index].title),
-              subtitle: Text(meetings[index].description),
-            );
-          },
-        ));
-  }
-}
-
-class Meeting {
-  final String title;
-  final String description;
-  // Add other properties of a meeting here
-
-  Meeting({required this.title, required this.description});
-
-  // Factory method to convert Firestore data to Dart object
-  factory Meeting.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data();
-    return Meeting(
-      title: data?['title'],
-      description: data?['description'],
-      // Initialize other properties here
+      appBar: AppBar(
+        title: Text('Meetings on ${widget.day.toString()}'),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              try {
+                await Navigator.pushNamed(
+                  context,
+                  Routes.createMeeting,
+                  arguments: () =>
+                      fetchMeetingsForDay(), // Pass callback function
+                );
+              } catch (e) {
+                await AwesomeDialog(
+                  context: context,
+                  dialogType: DialogType.info,
+                  animType: AnimType.rightSlide,
+                  title: 'Meeting creation error',
+                  desc: e.toString(),
+                ).show();
+              }
+            },
+            icon: const Icon(Icons.add),
+          ),
+        ],
+      ),
+      body: ListView.builder(
+        itemCount: meetings.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(meetings[index].title),
+            subtitle: Text(meetings[index].description),
+          );
+        },
+      ),
     );
   }
 }

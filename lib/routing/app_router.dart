@@ -8,6 +8,7 @@ import '../screens/signup/ui/sign_up_sceen.dart';
 import '../screens/home/ui/home_screen.dart';
 import '../screens/map/ui/map_screen.dart';
 import '../screens/meeting/ui/meeting_screen.dart';
+import '../screens/meeting/ui/create_meeting.dart';
 import 'routes.dart';
 
 class AppRouter {
@@ -51,6 +52,11 @@ class AppRouter {
       case Routes.meetingScreen:
         return MaterialPageRoute(
           builder: (_) => MeetingScreen(day: day),
+        );
+      case Routes.createMeeting:
+        final Function() refreshMeetingsList = settings.arguments as Function();
+        return MaterialPageRoute(
+          builder: (_) => CreateMeeting(refreshMeetingsList: refreshMeetingsList),
         );
     }
     return null;
