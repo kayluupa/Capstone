@@ -12,7 +12,14 @@ import '../screens/meeting/ui/create_meeting.dart';
 import 'routes.dart';
 
 class AppRouter {
-  Route? generateRoute(RouteSettings settings, DateTime day) {
+  Route? generateRoute(RouteSettings settings) {
+    final arguments = settings.arguments;
+    final Map<String, dynamic>? args =
+        arguments is Map<String, dynamic> ? arguments : null;
+    final DateTime? day = args?['day'] as DateTime?;
+    final Function()? refreshMeetingsList =
+        args?['refreshMeetingsList'] as Function()?;
+
     switch (settings.name) {
       case Routes.forgetScreen:
         return MaterialPageRoute(
@@ -51,12 +58,14 @@ class AppRouter {
         );
       case Routes.meetingScreen:
         return MaterialPageRoute(
-          builder: (_) => MeetingScreen(day: day),
+          builder: (_) => MeetingScreen(day: day ?? DateTime.now()),
         );
       case Routes.createMeeting:
-        final Function() refreshMeetingsList = settings.arguments as Function();
         return MaterialPageRoute(
-          builder: (_) => CreateMeeting(refreshMeetingsList: refreshMeetingsList),
+          builder: (_) => CreateMeeting(
+            day: day ?? DateTime.now(),
+            refreshMeetingsList: refreshMeetingsList!,
+          ),
         );
     }
     return null;

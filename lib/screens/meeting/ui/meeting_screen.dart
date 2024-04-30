@@ -74,32 +74,20 @@ class MeetingScreenState extends State<MeetingScreen> {
       setState(() {});
     } catch (e) {
       // Show an error message to the user
-      showErrorMessage('Failed to fetch meetings. Please try again later.');
+      showErrorMessage(e.toString());
     }
   }
 
-  void showErrorMessage(String message) {
-    final GlobalKey<State> key = GlobalKey<State>();
-    final context = key.currentContext;
-    if (context != null) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Error'),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-    }
+  void showErrorMessage(String message) async {
+    if (!mounted) return; // Check if the widget is still mounted
+    final currentContext = context;
+    await AwesomeDialog(
+      context: currentContext,
+      dialogType: DialogType.info,
+      animType: AnimType.rightSlide,
+      title: 'Meeting creation error',
+      desc: message,
+    ).show();
   }
 
   @override
@@ -114,17 +102,15 @@ class MeetingScreenState extends State<MeetingScreen> {
                 await Navigator.pushNamed(
                   context,
                   Routes.createMeeting,
-                  arguments: () =>
-                      fetchMeetingsForDay(), // Pass callback function
+                  arguments: {
+                    'day': widget.day,
+                    'refreshMeetingsList': fetchMeetingsForDay,
+                  }, // Pass the day
                 );
+                // After returning from the createMeeting screen, fetch meetings again
+                fetchMeetingsForDay();
               } catch (e) {
-                await AwesomeDialog(
-                  context: context,
-                  dialogType: DialogType.info,
-                  animType: AnimType.rightSlide,
-                  title: 'Meeting creation error',
-                  desc: e.toString(),
-                ).show();
+                showErrorMessage(e.toString());
               }
             },
             icon: const Icon(Icons.add),

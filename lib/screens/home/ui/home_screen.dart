@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 
 import '../../../core/widgets/no_internet.dart';
 import '../../../theming/colors.dart';
-import '../../meeting/ui/meeting_screen.dart';
 import '/routing/routes.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -22,10 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       today = day;
     });
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => MeetingScreen(day: day)),
-    );
+    Navigator.pushNamed(context, Routes.meetingScreen, arguments: {'day': day});
   }
 
   @override
@@ -38,6 +34,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications), // Add notification icon
+            onPressed: () {
+              // Define behavior for the notification button
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.account_circle),
             onPressed: () async {

@@ -3,9 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class CreateMeeting extends StatefulWidget {
+  final DateTime day;
   final void Function() refreshMeetingsList;
 
-  const CreateMeeting({super.key, required this.refreshMeetingsList});
+  const CreateMeeting(
+      {super.key, required this.day, required this.refreshMeetingsList});
 
   @override
   CreateMeetingState createState() => CreateMeetingState();
@@ -29,7 +31,7 @@ class CreateMeetingState extends State<CreateMeeting> {
     super.dispose();
   }
 
-  void createMeeting(VoidCallback popCallback) async {
+  Future<void> createMeeting(VoidCallback popCallback) async {
     // Get user ID
     final userId = FirebaseAuth.instance.currentUser!.uid;
 
@@ -42,11 +44,13 @@ class CreateMeetingState extends State<CreateMeeting> {
       'title': _titleController.text,
       'description': _descriptionController.text,
       // Add other meeting details as needed
-      'date': Timestamp.now(),
+      'date': widget.day.toUtc().add(const Duration(hours: 5)),
     });
 
     widget.refreshMeetingsList();
-    Navigator.pop(context);
+
+    // Call the callback function to pop the navigator
+    popCallback();
   }
 
   @override
@@ -76,9 +80,24 @@ class CreateMeetingState extends State<CreateMeeting> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {
-                createMeeting(() {
-                  Navigator.pop(context, true);
+              onPressed: () async {
+                // Show a loading indicator
+                showDialog(
+                  context: context,
+                  barrierDismissible:
+                      false, // Prevent dismissing the dialog by tapping outside
+                  builder: (context) => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+
+                // Create the meeting
+                await createMeeting(() {
+                  // Pop the dialog
+                  Navigator.pop(context);
+
+                  // Pop the screen
+                  Navigator.pop(context);
                 });
               },
               child: const Text('Create Meeting'),

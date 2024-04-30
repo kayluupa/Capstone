@@ -48,7 +48,7 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(
             useMaterial3: true,
           ),
-          onGenerateRoute: (settings) => router.generateRoute(settings, today),
+          onGenerateRoute: (settings) => router.generateRoute(settings),
           debugShowCheckedModeBanner: false,
           initialRoute: initialRoute,
         );
