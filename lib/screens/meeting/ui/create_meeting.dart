@@ -29,7 +29,7 @@ class CreateMeetingState extends State<CreateMeeting> {
     super.dispose();
   }
 
-  void createMeeting(VoidCallback popCallback) async {
+  Future<void> createMeeting(VoidCallback popCallback) async {
     // Get user ID
     final userId = FirebaseAuth.instance.currentUser!.uid;
 
@@ -46,7 +46,9 @@ class CreateMeetingState extends State<CreateMeeting> {
     });
 
     widget.refreshMeetingsList();
-    Navigator.pop(context);
+
+    // Call the callback function to pop the navigator
+    popCallback();
   }
 
   @override
@@ -78,7 +80,7 @@ class CreateMeetingState extends State<CreateMeeting> {
             ElevatedButton(
               onPressed: () {
                 createMeeting(() {
-                  Navigator.pop(context, true);
+                  Navigator.pop(context);
                 });
               },
               child: const Text('Create Meeting'),
