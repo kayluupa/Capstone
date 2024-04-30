@@ -1,17 +1,9 @@
-import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_offline/flutter_offline.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../core/widgets/no_internet.dart';
 import '../../../theming/colors.dart';
-import '/helpers/extensions.dart';
-import '/routing/routes.dart';
-import '/theming/styles.dart';
-import '../../../core/widgets/app_text_button.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
