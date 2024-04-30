@@ -102,8 +102,13 @@ class MeetingScreenState extends State<MeetingScreen> {
                 await Navigator.pushNamed(
                   context,
                   Routes.createMeeting,
-                  arguments: () => fetchMeetingsForDay(), // Pass callback function
+                  arguments: {
+                    'day': widget.day,
+                    'refreshMeetingsList': fetchMeetingsForDay,
+                  }, // Pass the day
                 );
+                // After returning from the createMeeting screen, fetch meetings again
+                fetchMeetingsForDay();
               } catch (e) {
                 showErrorMessage(e.toString());
               }
