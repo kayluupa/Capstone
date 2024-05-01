@@ -19,14 +19,56 @@ class MapScreen extends StatefulWidget {
   State<MapScreen> createState() => _MapScreenState();
 }
 
+LatLng _calculateMidpoint(LatLng point1, LatLng point2) {
+  double lat1 = point1.latitude;
+  double lng1 = point1.longitude;
+  double lat2 = point2.latitude;
+  double lng2 = point2.longitude;
+
+  double midLat = (lat1 + lat2) / 2;
+  double midLng = (lng1 + lng2) / 2;
+
+  return LatLng(midLat, midLng);
+}
+
 class _MapScreenState extends State<MapScreen> {
   late GoogleMapController mapController;
+  final Set<Marker> _markers = {};
 
   // UNT Frisco co-ordinates
-  late LatLng _center = const LatLng(33.1857, -96.8054);
+  final LatLng _center = const LatLng(33.1857, -96.8054);
+  //
+
+  void _addMarkers() {
+    LatLng midpoint = _calculateMidpoint(
+        LatLng(double.parse(widget.latitude), double.parse(widget.longitude)),
+        _center);
+    setState(() {
+      _markers.add(
+        Marker(
+            markerId: MarkerId(widget.title),
+            position: LatLng(
+                double.parse(widget.latitude), double.parse(widget.longitude)),
+            infoWindow: InfoWindow(title: widget.description)),
+      );
+      _markers.add(
+        Marker(
+            markerId: const MarkerId("UNT Frisco"),
+            position: _center,
+            infoWindow: const InfoWindow(title: "Second Point")),
+      );
+      _markers.add(
+        Marker(
+            markerId: const MarkerId("Midpoint"),
+            position: midpoint,
+            infoWindow: const InfoWindow(title: "Midpoint")),
+      );
+    });
+  }
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
+    _addMarkers();
   }
 
   @override
@@ -57,21 +99,17 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   SafeArea _mapPage(BuildContext context) {
+    LatLng midpoint = _calculateMidpoint(
+        LatLng(double.parse(widget.latitude), double.parse(widget.longitude)),
+        _center);
     return SafeArea(
         child: GoogleMap(
       onMapCreated: _onMapCreated,
       initialCameraPosition: CameraPosition(
-        target: _center = LatLng(
-            double.parse(widget.latitude), double.parse(widget.longitude)),
+        target: midpoint,
         zoom: 12.0,
       ),
-      markers: {
-        Marker(
-            markerId: MarkerId(widget.title),
-            position: LatLng(
-                double.parse(widget.latitude), double.parse(widget.longitude)),
-            infoWindow: InfoWindow(title: widget.description)),
-      },
+      markers: _markers,
     ));
   }
 }

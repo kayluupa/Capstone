@@ -186,10 +186,6 @@ class CreateMeetingState extends State<CreateMeeting> {
       var data = json.decode(response.body);
       if (data['status'] == 'OK') {
         var location = data['result']['geometry']['location'];
-        // TextEditingController name = data['result']['name'];
-        // setState(() {
-        //   _locationController = name;
-        // });
         double lat = location['lat'];
         double lng = location['lng'];
         setState(() {
