@@ -2,31 +2,30 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 import '/routing/routes.dart';
 
 class Meeting {
-  final String title;
-  final String description;
+  final String userEmail;
+  final String time;
   final String lat;
   final String lng;
-  // Add other properties of a meeting here
 
-  Meeting(
-      {required this.title,
-      required this.description,
-      required this.lat,
-      required this.lng});
+  Meeting({
+    required this.userEmail,
+    required this.time,
+    required this.lat,
+    required this.lng,
+  });
 
-  // Factory method to convert Firestore data to Dart object
   factory Meeting.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data();
+    final data = doc.data() ?? {};
     return Meeting(
-      title: data?['title'],
-      description: data?['description'],
-      lat: data?['lat'],
-      lng: data?['lng'],
-      // Initialize other properties here
+      userEmail: data['user'] ?? 'No Email',
+      time: data['time'] ?? 'No Time',
+      lat: data['lat'] ?? '0.0',
+      lng: data['lng'] ?? '0.0',
     );
   }
 }
@@ -60,7 +59,6 @@ class MeetingScreenState extends State<MeetingScreen> {
 
   void fetchMeetingsForDay() async {
     try {
-      // Query Firestore to fetch meetings for the specified day
       final QuerySnapshot<Map<String, dynamic>> snapshot =
           await FirebaseFirestore.instance
               .collection('users')
@@ -75,26 +73,24 @@ class MeetingScreenState extends State<MeetingScreen> {
               )
               .get();
 
-      // Convert Firestore data to Dart objects
       meetings =
           snapshot.docs.map((doc) => Meeting.fromFirestore(doc)).toList();
 
       setState(() {});
     } catch (e) {
-      // Show an error message to the user
       showErrorMessage(e.toString());
     }
   }
 
   void showErrorMessage(String message) async {
-    if (!mounted) return; // Check if the widget is still mounted
+    if (!mounted) return;
     final currentContext = context;
     await AwesomeDialog(
       context: currentContext,
       dialogType: DialogType.info,
       animType: AnimType.rightSlide,
-      title: 'Meeting creation error',
-      desc: message,
+      title: 'Error',
+      desc: message.isNotEmpty ? message : 'An unknown error occurred.',
     ).show();
   }
 
@@ -102,7 +98,7 @@ class MeetingScreenState extends State<MeetingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Meetings on ${widget.day.toString()}'),
+        title: Text(DateFormat('EEEE, MMMM d, yyyy').format(widget.day)),
         actions: [
           IconButton(
             onPressed: () async {
@@ -113,9 +109,8 @@ class MeetingScreenState extends State<MeetingScreen> {
                   arguments: {
                     'day': widget.day,
                     'refreshMeetingsList': fetchMeetingsForDay,
-                  }, // Pass the day
+                  },
                 );
-                // After returning from the createMeeting screen, fetch meetings again
                 fetchMeetingsForDay();
               } catch (e) {
                 showErrorMessage(e.toString());
@@ -129,23 +124,24 @@ class MeetingScreenState extends State<MeetingScreen> {
         itemCount: meetings.length,
         itemBuilder: (context, index) {
           return ListTile(
-              title: Text(meetings[index].title),
-              subtitle: Text(meetings[index].description),
-              trailing: IconButton(
-                onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    Routes.mapScreen,
-                    arguments: {
-                      'latitude': meetings[index].lat,
-                      'longitude': meetings[index].lng,
-                      'title': meetings[index].title,
-                      'description': meetings[index].description,
-                    },
-                  );
-                },
-                icon: const Icon(Icons.map),
-              ));
+            title: Text(meetings[index].userEmail),
+            subtitle: Text(meetings[index].time),
+            trailing: IconButton(
+              onPressed: () {
+                Navigator.pushNamed(
+                  context,
+                  Routes.mapScreen,
+                  arguments: {
+                    'latitude': meetings[index].lat,
+                    'longitude': meetings[index].lng,
+                    'title': meetings[index].userEmail,
+                    'description': meetings[index].time,
+                  },
+                );
+              },
+              icon: const Icon(Icons.map),
+            ),
+          );
         },
       ),
     );
