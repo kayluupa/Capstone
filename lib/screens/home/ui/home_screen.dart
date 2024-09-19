@@ -35,9 +35,8 @@ class _HomeScreenState extends State<HomeScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications), // Add notification icon
+            icon: const Icon(Icons.notifications),
             onPressed: () {
-              // Define behavior for the notification button
             },
           ),
           IconButton(
