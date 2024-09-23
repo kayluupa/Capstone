@@ -57,6 +57,50 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'Navigation Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('Home'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.map),
+              title: Text('Map'),
+              onTap: () {
+                Navigator.pushNamed(context, Routes.mapScreen);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.account_circle),
+              title: Text('Account'),
+              onTap: () {
+                Navigator.pushNamed(context, Routes.accountScreen);
+              },
+            ),
+          ],
+        ),
+      ),
+
+
+
       body: OfflineBuilder(
         connectivityBuilder: (
           BuildContext context,
@@ -92,24 +136,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 firstDay: DateTime.utc(2024, 1, 1),
                 lastDay: DateTime.utc(2024, 12, 31),
                 onDaySelected: _onDaySelected,
-              ),
-              TextButton(
-                style: TextButton.styleFrom(
-                    textStyle: const TextStyle(fontSize: 30)),
-                onPressed: () async {
-                  try {
-                    Navigator.pushNamed(context, Routes.mapScreen);
-                  } catch (e) {
-                    await AwesomeDialog(
-                      context: context,
-                      dialogType: DialogType.info,
-                      animType: AnimType.rightSlide,
-                      title: 'Map error',
-                      desc: e.toString(),
-                    ).show();
-                  }
-                },
-                child: const Text('Map'),
               ),
             ],
           ),
