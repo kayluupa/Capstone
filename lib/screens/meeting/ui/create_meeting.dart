@@ -15,6 +15,13 @@ class CreateMeeting extends StatefulWidget {
   CreateMeetingState createState() => CreateMeetingState();
 }
 
+class User {
+  final String userId;
+  final String email;
+
+  User({required this.userId, required this.email});
+}
+
 class Place {
   final String placeId;
   final String description;
@@ -23,52 +30,71 @@ class Place {
 }
 
 class CreateMeetingState extends State<CreateMeeting> {
-  late TextEditingController _titleController;
-  late TextEditingController _descriptionController;
+  late TextEditingController _userController;
   late TextEditingController _locationController;
 
+  List<User> userResults = [];
   List<Place> searchResults = [];
   String _latitude = "";
   String _longitude = "";
+  TimeOfDay? selectedTime;
+  String? selectedUserId;
 
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController();
-    _descriptionController = TextEditingController();
+    _userController = TextEditingController();
     _locationController = TextEditingController();
   }
 
   @override
   void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
+    _userController.dispose();
     _locationController.dispose();
     super.dispose();
   }
 
   Future<void> createMeeting(VoidCallback popCallback) async {
-    // Get user ID
-    final userId = FirebaseAuth.instance.currentUser!.uid;
-
-    // Create a new meeting document in Firestore
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .collection('meetings')
-        .add({
-      'title': _titleController.text,
-      'description': _descriptionController.text,
-      // Add other meeting details as needed
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    final meetingData = {
+      'user': _userController.text,
       'date': widget.day.toUtc().add(const Duration(hours: 5)),
+      'time': selectedTime != null
+          ? '${selectedTime!.hour}:${selectedTime!.minute}'
+          : null,
       'lat': _latitude,
       'lng': _longitude,
       'location': _locationController.text,
-    });
+    };
+
+    final requestDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUserId)
+        .collection('requests')
+        .add(meetingData);
+
+    if (selectedUserId != null) {
+      final requestData = {
+        'fromUserId': currentUserId,
+        'date': widget.day.toUtc().add(const Duration(hours: 5)),
+        'time': selectedTime != null
+            ? '${selectedTime!.hour}:${selectedTime!.minute}'
+            : null,
+        'lat': null,
+        'lng': null,
+        'location': null,
+        'status': 'pending',
+        'initialUserRequestId': requestDoc.id,
+      };
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(selectedUserId)
+          .collection('requests')
+          .add(requestData);
+    }
 
     widget.refreshMeetingsList();
-
-    // Call the callback function to pop the navigator
     popCallback();
   }
 
@@ -78,87 +104,176 @@ class CreateMeetingState extends State<CreateMeeting> {
       appBar: AppBar(
         title: const Text('Create Meeting'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Title',
+      body: GestureDetector(
+        onTap: () {
+          setState(() {
+            userResults.clear();
+            searchResults.clear();
+          });
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Stack(
+            children: [
+              Container(
+                color: Colors.transparent,
               ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-              ),
-              maxLines: null,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _locationController,
-              onChanged: (value) {
-                if (value.isNotEmpty) {
-                  searchPlaces(value);
-                  _locationController.text;
-                }
-              },
-              textInputAction: TextInputAction.search,
-              decoration: const InputDecoration(hintText: "Enter Location"),
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: searchResults.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(searchResults[index].description),
-                    onTap: () {
-                      selectPlace(searchResults[index].placeId);
-                      _locationController.text =
-                          searchResults[index].description;
-                      setState(() {
-                        searchResults.clear(); // Clear the search results
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextFormField(
+                    controller: _userController,
+                    onChanged: (value) {
+                      if (value.isNotEmpty) {
+                        searchUsersByEmail(value);
+                      }
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Search User by Email',
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  GestureDetector(
+                    onTap: () async {
+                      TimeOfDay? picked = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          selectedTime = picked;
+                        });
+                      }
+                    },
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Select Time',
+                        border: OutlineInputBorder(),
+                      ),
+                      child: Text(
+                        selectedTime != null
+                            ? '${selectedTime!.hour}:${selectedTime!.minute}'
+                            : 'Select a time',
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: _locationController,
+                    onChanged: (value) {
+                      if (value.isNotEmpty) {
+                        searchPlaces(value);
+                      }
+                    },
+                    textInputAction: TextInputAction.search,
+                    decoration: const InputDecoration(
+                      hintText: "Enter Location",
+                      labelText: 'Location',
+                    ),
+                  ),
+                  const SizedBox(height: 50),
+                  ElevatedButton(
+                    onPressed: () async {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) => const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                      await createMeeting(() {
+                        Navigator.pop(context);
+                        Navigator.pop(context);
                       });
                     },
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () async {
-                // Show a loading indicator
-                showDialog(
-                  context: context,
-                  barrierDismissible:
-                      false, // Prevent dismissing the dialog by tapping outside
-                  builder: (context) => const Center(
-                    child: CircularProgressIndicator(),
+                    child: const Text('Create Meeting'),
                   ),
-                );
-
-                // Create the meeting
-                await createMeeting(() {
-                  // Pop the dialog
-                  Navigator.pop(context);
-
-                  // Pop the screen
-                  Navigator.pop(context);
-                });
-              },
-              child: const Text('Create Meeting'),
-            ),
-          ],
+                ],
+              ),
+              if (userResults.isNotEmpty)
+                Positioned(
+                  top: 70,
+                  left: 16,
+                  right: 16,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: ListView.builder(
+                      itemCount: userResults.length,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(userResults[index].email),
+                          onTap: () {
+                            setState(() {
+                              _userController.text = userResults[index].email;
+                              selectedUserId = userResults[index].userId;
+                              userResults.clear();
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              if (searchResults.isNotEmpty)
+                Positioned(
+                  top: 255,
+                  left: 16,
+                  right: 16,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: ListView.builder(
+                      itemCount: searchResults.length,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(searchResults[index].description),
+                          onTap: () {
+                            selectPlace(searchResults[index].placeId);
+                            _locationController.text =
+                                searchResults[index].description;
+                            setState(() {
+                              searchResults.clear();
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 
+  Future<void> searchUsersByEmail(String query) async {
+    final users = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isGreaterThanOrEqualTo: query)
+        .limit(1)
+        .get();
+
+    setState(() {
+      userResults = users.docs
+          .map((doc) => User(userId: doc.id, email: doc['email']))
+          .toList();
+    });
+  }
+
   Future<void> searchPlaces(String query) async {
-    String apiKey = "AIzaSyBtOyOc0k0pQwnUgjIf_K4sGdPApdI-WUY";
+    String apiKey = "AIzaSyDizaB7QZXvI6NY2ppGrbFemKAeZNcGSvc";
     String url =
         'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$query&types=geocode&key=$apiKey';
     var response = await http.get(Uri.parse(url));
@@ -178,7 +293,7 @@ class CreateMeetingState extends State<CreateMeeting> {
   }
 
   Future<void> selectPlace(String placeId) async {
-    String apiKey = 'AIzaSyBtOyOc0k0pQwnUgjIf_K4sGdPApdI-WUY';
+    String apiKey = 'AIzaSyDizaB7QZXvI6NY2ppGrbFemKAeZNcGSvc';
     String url =
         'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=geometry&key=$apiKey';
     var response = await http.get(Uri.parse(url));
