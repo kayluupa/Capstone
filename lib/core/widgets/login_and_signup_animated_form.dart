@@ -59,6 +59,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController passwordConfirmationController =
       TextEditingController();
+  TextEditingController phoneNumberController = TextEditingController();
   final formKey = GlobalKey<FormState>();
   Artboard? riveArtboard;
   late RiveAnimationController controllerIdle;
@@ -240,6 +241,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
             await user.set({
               'name': nameController.text,
               'email': emailController.text,
+              'phone number': int.tryParse(phoneNumberController.text),
             });
 
             await _auth.signOut();
@@ -581,6 +583,38 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     return const SizedBox.shrink();
   }
 
+  Widget phoneNumberField() {
+    if (widget.isSignUpPage == true) {
+      return Column(
+        children: [
+          AppTextFormField(
+            hint: 'Phone Number',
+            onChanged: (value) {
+              if (value.isNotEmpty && value.length <= 13 && !isLookingLeft) {
+                addDownLeftController();
+              } else if (value.isNotEmpty &&
+                  value.length > 13 &&
+                  !isLookingRight) {
+                addDownRightController();
+              }
+            },
+            validator: (value) {
+              if (value == null ||
+                  value.isEmpty ||
+                  !AppRegex.isPhoneNumberValid(value)) {
+                addFailController();
+                return 'Please enter a valid phone number';
+              }
+            },
+            controller: phoneNumberController,
+          ),
+          Gap(18.h),
+        ],
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -601,6 +635,8 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
           passwordField(),
           Gap(18.h),
           passwordConfirmationField(),
+          Gap(18.h),
+          phoneNumberField(),
           forgetPasswordTextButton(context),
           Gap(10.h),
           PasswordValidations(
@@ -623,6 +659,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
     passwordConfirmationController.dispose();
     emailController.dispose();
     nameController.dispose();
+    phoneNumberController.dispose();
     removeAllControllers();
     controllerIdle.dispose();
     controllerHandsUp.dispose();
