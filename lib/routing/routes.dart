@@ -8,4 +8,5 @@ class Routes {
   static const String mapScreen = "/mapScreen";
   static const String meetingScreen = "/meetingScreen";
   static const String createMeeting = "/createMeeting";
+  static const String settingsScreen = "/settingsScreen";
 }

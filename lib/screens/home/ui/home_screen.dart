@@ -1,9 +1,8 @@
-import 'package:awesome_dialog/awesome_dialog.dart';
+// import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
-
 import '../../../core/widgets/no_internet.dart';
 import '../../../theming/colors.dart';
 import '/routing/routes.dart';
@@ -39,22 +38,6 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.account_circle),
-            onPressed: () async {
-              try {
-                Navigator.pushNamed(context, Routes.accountScreen);
-              } catch (e) {
-                await AwesomeDialog(
-                  context: context,
-                  dialogType: DialogType.info,
-                  animType: AnimType.rightSlide,
-                  title: 'Account profile error',
-                  desc: e.toString(),
-                ).show();
-              }
-            },
-          ),
         ],
       ),
 
@@ -67,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.blue,
               ),
               child: Text(
-                'Navigation Menu',
+                'Get Connected!',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 24,
@@ -89,17 +72,15 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.account_circle),
-              title: Text('Account'),
+              leading: Icon(Icons.settings),
+              title: Text('Settings'), 
               onTap: () {
-                Navigator.pushNamed(context, Routes.accountScreen);
+                Navigator.pushNamed(context, Routes.settingsScreen);  
               },
             ),
           ],
         ),
       ),
-
-
 
       body: OfflineBuilder(
         connectivityBuilder: (

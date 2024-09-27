@@ -9,6 +9,7 @@ import '../screens/home/ui/home_screen.dart';
 import '../screens/map/ui/map_screen.dart';
 import '../screens/meeting/ui/meeting_screen.dart';
 import '../screens/meeting/ui/create_meeting.dart';
+import '../screens/settings/ui/settings_screen.dart';
 import 'routes.dart';
 
 class AppRouter {
@@ -74,6 +75,10 @@ class AppRouter {
             day: day ?? DateTime.now(),
             refreshMeetingsList: refreshMeetingsList!,
           ),
+        );
+      case Routes.settingsScreen:
+        return MaterialPageRoute(
+          builder: (_) => const SettingsScreen(),
         );
     }
     return null;
