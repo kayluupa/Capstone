@@ -34,7 +34,7 @@ class _AccountScreenState extends State<AccountScreen> {
     Reference storageRef = FirebaseStorage.instance
         .ref()
         .child("Profile Pictures")
-        .child(FirebaseAuth.instance.currentUser!.uid + '.png');
+        .child('${FirebaseAuth.instance.currentUser!.uid}.png');
     if (pickedImage != null) {
       File imageFile = File(pickedImage.path);
       await storageRef.putFile(imageFile);
@@ -135,7 +135,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                     ))
                               : Image.file(_image!, fit: BoxFit.cover)),
                     ),
-                    Gap(20),
+                    const Gap(20),
                     Text(
                       FirebaseAuth.instance.currentUser!.displayName!,
                       style: TextStyles.font15DarkBlue500Weight
@@ -145,7 +145,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       snapshot.data!,
                       style: TextStyles.font15DarkBlue500Weight,
                     ),
-                    Gap(20),
+                    const Gap(20),
                     Center(
                       child: SizedBox(
                         height: 50.w,
