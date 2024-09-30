@@ -122,7 +122,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 lastDay: DateTime.utc(2024, 12, 31),
                 onDaySelected: _onDaySelected,
               ),
-            ],
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: Text(
+                  "To start a request to meet-up just click on your desired date!",
+                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ], //closer for children
           ),
         ),
       ),
