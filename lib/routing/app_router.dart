@@ -10,6 +10,7 @@ import '../screens/map/ui/map_screen.dart';
 import '../screens/meeting/ui/meeting_screen.dart';
 import '../screens/meeting/ui/create_meeting.dart';
 import '../screens/settings/ui/settings_screen.dart';
+import '../screens/requests/ui/requests_screen.dart';
 import 'routes.dart';
 
 class AppRouter {
@@ -79,6 +80,10 @@ class AppRouter {
       case Routes.settingsScreen:
         return MaterialPageRoute(
           builder: (_) => const SettingsScreen(),
+        );
+      case Routes.requestsScreen:
+        return MaterialPageRoute(
+          builder: (_) => const RequestsScreen(),
         );
     }
     return null;
