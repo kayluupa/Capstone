@@ -35,17 +35,15 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications),
-            onPressed: () {
-            },
+            onPressed: () {},
           ),
         ],
       ),
-
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            DrawerHeader(
+            const DrawerHeader(
               decoration: BoxDecoration(
                 color: Colors.blue,
               ),
@@ -58,30 +56,36 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Home'),
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
               onTap: () {
                 Navigator.pop(context);
               },
             ),
             ListTile(
-              leading: Icon(Icons.map),
-              title: Text('Map'),
+              leading: const Icon(Icons.map),
+              title: const Text('Meeting Requests'),
+              onTap: () {
+                Navigator.pushNamed(context, Routes.requestsScreen);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.map),
+              title: const Text('Map'),
               onTap: () {
                 Navigator.pushNamed(context, Routes.mapScreen);
               },
             ),
             ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Settings'), 
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
               onTap: () {
-                Navigator.pushNamed(context, Routes.settingsScreen);  
+                Navigator.pushNamed(context, Routes.settingsScreen);
               },
             ),
           ],
         ),
       ),
-
       body: OfflineBuilder(
         connectivityBuilder: (
           BuildContext context,

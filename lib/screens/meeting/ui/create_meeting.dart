@@ -56,26 +56,25 @@ class CreateMeetingState extends State<CreateMeeting> {
 
   Future<void> createMeeting(VoidCallback popCallback) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-    final meetingData = {
-      'user': _userController.text,
-      'date': widget.day.toUtc().add(const Duration(hours: 5)),
-      'time': selectedTime != null
-          ? '${selectedTime!.hour}:${selectedTime!.minute}'
-          : null,
-      'lat': _latitude,
-      'lng': _longitude,
-      'location': _locationController.text,
-    };
-
-    final requestDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(currentUserId)
-        .collection('requests')
-        .add(meetingData);
 
     if (selectedUserId != null) {
+      final initRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .collection('requests')
+          .doc();
+
+      final selRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(selectedUserId)
+          .collection('requests')
+          .doc();
+
       final requestData = {
         'fromUserId': currentUserId,
+        'fromRequestId': initRef.id,
+        'toUserId': selectedUserId,
+        'toRequestId': selRef.id,
         'date': widget.day.toUtc().add(const Duration(hours: 5)),
         'time': selectedTime != null
             ? '${selectedTime!.hour}:${selectedTime!.minute}'
@@ -83,15 +82,19 @@ class CreateMeetingState extends State<CreateMeeting> {
         'lat': null,
         'lng': null,
         'location': null,
-        'status': 'pending',
-        'initialUserRequestId': requestDoc.id,
       };
 
+      await initRef.set(requestData);
+      await selRef.set(requestData);
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(selectedUserId)
+          .doc(currentUserId)
           .collection('requests')
-          .add(requestData);
+          .doc(initRef.id)
+          .update({
+        'lat': _latitude,
+        'lng': _longitude,
+      });
     }
 
     widget.refreshMeetingsList();
