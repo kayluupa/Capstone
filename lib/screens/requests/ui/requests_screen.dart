@@ -108,14 +108,16 @@ class RequestsScreenState extends State<RequestsScreen> {
 
       List<MeetingRequest> requests = snapshot.docs
           .map((doc) => MeetingRequest.fromFirestore(doc))
-          .where((request) => request.fromUserId != userId)
           .toList();
 
       for (var request in requests) {
+        String targetUserId = request.fromUserId == userId
+            ? request.toUserId
+            : request.fromUserId;
         DocumentSnapshot<Map<String, dynamic>> userDoc = await FirebaseFirestore
             .instance
             .collection('users')
-            .doc(request.fromUserId)
+            .doc(targetUserId)
             .get();
         String email = userDoc.data()?['email'] ?? 'No Email';
         request.userEmail = email;
@@ -364,29 +366,36 @@ class RequestsScreenState extends State<RequestsScreen> {
       body: ListView.builder(
         itemCount: meetingRequests.length,
         itemBuilder: (context, index) {
+          final request = meetingRequests[index];
+          final isCreatedByCurrentUser = request.fromUserId == userId;
+
           return ListTile(
-            title: Text(meetingRequests[index].userEmail),
+            title: Text(request.userEmail),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(DateFormat('MMMM d, y')
-                    .format(meetingRequests[index].date.toDate())),
-                Text(meetingRequests[index].time),
+                Text(DateFormat('MMMM d, y').format(request.date.toDate())),
+                Text(request.time),
               ],
             ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.check, color: Colors.green),
-                  onPressed: () => acceptRequest(meetingRequests[index]),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.red),
-                  onPressed: () => deleteRequest(meetingRequests[index]),
-                ),
-              ],
-            ),
+            trailing: isCreatedByCurrentUser
+                ? IconButton(
+                    icon: const Icon(Icons.close, color: Colors.red),
+                    onPressed: () => deleteRequest(request),
+                  )
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.check, color: Colors.green),
+                        onPressed: () => acceptRequest(request),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.red),
+                        onPressed: () => deleteRequest(request),
+                      ),
+                    ],
+                  ),
           );
         },
       ),
