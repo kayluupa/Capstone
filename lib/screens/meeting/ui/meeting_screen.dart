@@ -95,54 +95,68 @@ class MeetingScreenState extends State<MeetingScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
         title: Text(DateFormat('EEEE, MMMM d, yyyy').format(widget.day)),
-        actions: [
-          IconButton(
-            onPressed: () async {
-              try {
-                await Navigator.pushNamed(
-                  context,
-                  Routes.createMeeting,
-                  arguments: {
-                    'day': widget.day,
-                    'refreshMeetingsList': fetchMeetingsForDay,
-                  },
-                );
-                fetchMeetingsForDay();
-              } catch (e) {
-                showErrorMessage(e.toString());
-              }
-            },
-            icon: const Icon(Icons.add),
-          ),
-        ],
       ),
-      body: ListView.builder(
-        itemCount: meetings.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(meetings[index].userEmail),
-            subtitle: Text(meetings[index].time),
-            trailing: IconButton(
-              onPressed: () {
-                Navigator.pushNamed(
-                  context,
-                  Routes.mapScreen,
-                  arguments: {
-                    'latitude': meetings[index].lat,
-                    'longitude': meetings[index].lng,
-                    'title': meetings[index].userEmail,
-                    'description': meetings[index].time,
-                  },
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity, 
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  try {
+                    await Navigator.pushNamed(
+                      context,
+                      Routes.createMeeting,
+                      arguments: {
+                        'day': widget.day,
+                        'refreshMeetingsList': fetchMeetingsForDay,
+                      },
+                    );
+                    fetchMeetingsForDay();
+                  } catch (e) {
+                    showErrorMessage(e.toString());
+                  }
+                },
+                icon: const Icon(Icons.add),
+                label: const Text("Add Meeting"),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: meetings.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(meetings[index].userEmail),
+                  subtitle: Text(meetings[index].time),
+                  trailing: IconButton(
+                    onPressed: () {
+                      Navigator.pushNamed(
+                        context,
+                        Routes.mapScreen,
+                        arguments: {
+                          'latitude': meetings[index].lat,
+                          'longitude': meetings[index].lng,
+                          'title': meetings[index].userEmail,
+                          'description': meetings[index].time,
+                        },
+                      );
+                    },
+                    icon: const Icon(Icons.map),
+                  ),
                 );
               },
-              icon: const Icon(Icons.map),
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
