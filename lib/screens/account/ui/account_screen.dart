@@ -11,7 +11,6 @@ import 'package:image_picker/image_picker.dart';
 
 import 'dart:io';
 import '../../../core/widgets/no_internet.dart';
-import '../../../theming/colors.dart';
 import '/helpers/extensions.dart';
 import '/routing/routes.dart';
 import '/theming/styles.dart';
@@ -83,17 +82,17 @@ class _AccountScreenState extends State<AccountScreen> {
       body: OfflineBuilder(
         connectivityBuilder: (
           BuildContext context,
-          ConnectivityResult connectivity,
+          List<ConnectivityResult> connectivity,
           Widget child,
         ) {
-          final bool connected = connectivity != ConnectivityResult.none;
+          final bool connected =
+              connectivity.contains(ConnectivityResult.mobile) ||
+                  connectivity.contains(ConnectivityResult.wifi);
+
           return connected ? _accountPage(context) : const BuildNoInternet();
         },
-        child: const Center(
-          child: CircularProgressIndicator(
-            color: ColorsManager.mainBlue,
-          ),
-        ),
+        child: _accountPage(
+            context),
       ),
     );
   }

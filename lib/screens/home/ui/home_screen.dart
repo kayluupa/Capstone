@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
 import '../../../core/widgets/no_internet.dart';
-import '../../../theming/colors.dart';
 import '/routing/routes.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -89,17 +88,16 @@ class _HomeScreenState extends State<HomeScreen> {
       body: OfflineBuilder(
         connectivityBuilder: (
           BuildContext context,
-          ConnectivityResult connectivity,
+          List<ConnectivityResult> connectivity,
           Widget child,
         ) {
-          final bool connected = connectivity != ConnectivityResult.none;
+          final bool connected =
+              connectivity.contains(ConnectivityResult.mobile) ||
+                  connectivity.contains(ConnectivityResult.wifi);
+
           return connected ? _homePage(context) : const BuildNoInternet();
         },
-        child: const Center(
-          child: CircularProgressIndicator(
-            color: ColorsManager.mainBlue,
-          ),
-        ),
+        child: _homePage(context),
       ),
     );
   }
