@@ -4,11 +4,11 @@
 
 ```
 Contributors:
-Hasan Md Walid
-Kayla Singletary
-Malik Karunanayake
-Marlen Carreno
-Mohammad Saleh
-Dan Bui
-Zain Jamal
+Hasan Md Walid - hwyoshi
+Kayla Singletary - kayluupa
+Malik Karunanayake - GivaX
+Marlen Carreno - marlencarreno
+Mohammad Saleh - moesy99
+Dan Bui - ddb0240
+Zain Jamal - zainjamal45
 ```
