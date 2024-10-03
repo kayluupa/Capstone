@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
 
-import '../../../theming/colors.dart';
 import '../../../core/widgets/sign_in_with_google_text.dart';
 import '../../../helpers/google_sign_in.dart';
 import '../../../core/widgets/login_and_signup_animated_form.dart';
@@ -27,17 +26,16 @@ class _LoginScreenState extends State<LoginScreen> {
       body: OfflineBuilder(
         connectivityBuilder: (
           BuildContext context,
-          ConnectivityResult connectivity,
+          List<ConnectivityResult> connectivity,
           Widget child,
         ) {
-          final bool connected = connectivity != ConnectivityResult.none;
+          final bool connected =
+              connectivity.contains(ConnectivityResult.mobile) ||
+                  connectivity.contains(ConnectivityResult.wifi);
+
           return connected ? _loginPage(context) : const BuildNoInternet();
         },
-        child: const Center(
-          child: CircularProgressIndicator(
-            color: ColorsManager.mainBlue,
-          ),
-        ),
+        child: _loginPage(context),
       ),
     );
   }

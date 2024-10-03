@@ -8,15 +8,15 @@ import 'dart:convert';
 
 class User {
   final String id;
-  final String email;
+  final String name;
 
-  User({required this.id, required this.email});
+  User({required this.id, required this.name});
 
   factory User.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
     return User(
       id: doc.id,
-      email: data['email'] ?? 'No Email',
+      name: data['name'] ?? 'No Name',
     );
   }
 }
@@ -30,7 +30,7 @@ class MeetingRequest {
   final String time;
   final String lat;
   final String lng;
-  String userEmail;
+  String name;
 
   MeetingRequest({
     required this.fromUserId,
@@ -41,7 +41,7 @@ class MeetingRequest {
     required this.time,
     required this.lat,
     required this.lng,
-    required this.userEmail,
+    required this.name,
   });
 
   factory MeetingRequest.fromFirestore(
@@ -56,9 +56,16 @@ class MeetingRequest {
       time: data['time'] ?? 'No Time',
       lat: data['lat'] ?? '0.0',
       lng: data['lng'] ?? '0.0',
-      userEmail: '',
+      name: '',
     );
   }
+}
+
+class Place {
+  final String placeId;
+  final String description;
+
+  Place({required this.placeId, required this.description});
 }
 
 class RequestsScreen extends StatefulWidget {
@@ -119,8 +126,8 @@ class RequestsScreenState extends State<RequestsScreen> {
             .collection('users')
             .doc(targetUserId)
             .get();
-        String email = userDoc.data()?['email'] ?? 'No Email';
-        request.userEmail = email;
+        String name = userDoc.data()?['name'] ?? 'No Name';
+        request.name = name;
       }
 
       meetingRequests = requests;
@@ -144,153 +151,66 @@ class RequestsScreenState extends State<RequestsScreen> {
   }
 
   void acceptRequest(MeetingRequest request) async {
-    _locationController.clear();
+    final newLocation = _locationController.text;
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Enter Location'),
-          content: SizedBox(
-            height: 300,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: _locationController,
-                  onChanged: (value) {
-                    if (value.isNotEmpty) {
-                      searchPlaces(value);
-                    }
-                  },
-                  decoration: const InputDecoration(hintText: 'Location'),
-                ),
-                const SizedBox(height: 10),
-                if (searchResults.isNotEmpty)
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(4),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 5.0,
-                            spreadRadius: 2.0,
-                          ),
-                        ],
-                      ),
-                      child: ListView.builder(
-                        itemCount: searchResults.length,
-                        itemBuilder: (context, index) {
-                          return ListTile(
-                            title: Text(searchResults[index].description),
-                            onTap: () {
-                              selectPlace(searchResults[index].placeId);
-                              _locationController.text =
-                                  searchResults[index].description;
-                              setState(() {
-                                searchResults.clear();
-                              });
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                final newLocation = _locationController.text;
+    if (newLocation.isNotEmpty) {
+      final initFromRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(request.fromUserId)
+          .collection('meetings')
+          .doc();
 
-                if (newLocation.isNotEmpty) {
-                  final navigator = Navigator.of(context);
-                  final initFromRef = FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(request.fromUserId)
-                      .collection('meetings')
-                      .doc();
+      final initToRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(request.toUserId)
+          .collection('meetings')
+          .doc();
 
-                  final initToRef = FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(request.toUserId)
-                      .collection('meetings')
-                      .doc();
+      final meetingData = {
+        'fromUserId': request.fromUserId,
+        'fromRequestId': initFromRef.id,
+        'toUserId': request.toUserId,
+        'toRequestId': initToRef.id,
+        'name': null,
+        'date': request.date,
+        'time': request.time,
+        'lat': _latitude,
+        'lng': _longitude,
+      };
 
-                  final meetingData = {
-                    'fromUserId': request.fromUserId,
-                    'fromRequestId': initFromRef.id,
-                    'toUserId': request.toUserId,
-                    'toRequestId': initToRef.id,
-                    'email': null,
-                    'date': request.date,
-                    'time': request.time,
-                    'lat': _latitude,
-                    'lng': _longitude,
-                  };
+      await initFromRef.set(meetingData);
+      await initToRef.set(meetingData);
 
-                  await initFromRef.set(meetingData);
-                  await initToRef.set(meetingData);
+      try {
+        DocumentSnapshot<Map<String, dynamic>> userDoc = await FirebaseFirestore
+            .instance
+            .collection('users')
+            .doc(request.toUserId)
+            .get();
+        String name = userDoc.data()?['name'] ?? 'No Name';
 
-                  try {
-                    DocumentSnapshot<Map<String, dynamic>> userDoc =
-                        await FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(request.fromUserId)
-                            .get();
-                    String email = userDoc.data()?['email'] ?? 'No Email';
+        if (userDoc.exists) {
+          await initFromRef.update({'name': name});
+        }
 
-                    if (userDoc.exists) {
-                      await FirebaseFirestore.instance
-                          .collection('users')
-                          .doc(request.toUserId)
-                          .collection('requests')
-                          .doc(initToRef.id)
-                          .update({'email': email});
-                    }
+        userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(request.fromUserId)
+            .get();
+        name = userDoc.data()?['name'] ?? 'No Name';
 
-                    userDoc = await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(request.toUserId)
-                        .get();
+        if (userDoc.exists) {
+          await initToRef.update({'name': name});
+        }
+      } catch (e) {
+        showErrorMessage(e.toString());
+      }
 
-                    if (userDoc.exists) {
-                      email = userDoc.data()?['email'] ?? 'No Email';
-                      await FirebaseFirestore.instance
-                          .collection('users')
-                          .doc(request.fromUserId)
-                          .collection('requests')
-                          .doc(initFromRef.id)
-                          .update({'email': null});
-                    }
-                  } catch (e) {
-                    showErrorMessage(e.toString());
-                  }
-
-                  deleteRequest(request);
-
-                  navigator.pop();
-                  fetchAllRequests();
-                } else {
-                  showErrorMessage('Please enter a location.');
-                }
-              },
-              child: const Text('Submit'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-          ],
-        );
-      },
-    );
+      deleteRequest(request);
+      fetchAllRequests();
+    } else {
+      showErrorMessage('Please enter a location.');
+    }
   }
 
   void deleteRequest(MeetingRequest request) async {
@@ -363,49 +283,90 @@ class RequestsScreenState extends State<RequestsScreen> {
       appBar: AppBar(
         title: const Text('Meeting Requests'),
       ),
-      body: ListView.builder(
-        itemCount: meetingRequests.length,
-        itemBuilder: (context, index) {
-          final request = meetingRequests[index];
-          final isCreatedByCurrentUser = request.fromUserId == userId;
-
-          return ListTile(
-            title: Text(request.userEmail),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(DateFormat('MMMM d, y').format(request.date.toDate())),
-                Text(request.time),
-              ],
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _locationController,
+              onChanged: (value) {
+                if (value.isNotEmpty) {
+                  searchPlaces(value);
+                } else {
+                  setState(() {
+                    searchResults
+                        .clear();
+                  });
+                }
+              },
+              decoration: const InputDecoration(
+                hintText: 'Enter Location',
+                border: OutlineInputBorder(),
+              ),
             ),
-            trailing: isCreatedByCurrentUser
-                ? IconButton(
-                    icon: const Icon(Icons.close, color: Colors.red),
-                    onPressed: () => deleteRequest(request),
-                  )
-                : Row(
-                    mainAxisSize: MainAxisSize.min,
+          ),
+          if (searchResults.isNotEmpty)
+            Expanded(
+              child: ListView.builder(
+                itemCount: searchResults.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(searchResults[index].description),
+                    onTap: () {
+                      selectPlace(searchResults[index].placeId);
+                      _locationController.text =
+                          searchResults[index].description;
+                      setState(() {
+                        searchResults
+                            .clear();
+                      });
+                    },
+                  );
+                },
+              ),
+            ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: meetingRequests.length,
+              itemBuilder: (context, index) {
+                final request = meetingRequests[index];
+                final isCreatedByCurrentUser = request.fromUserId == userId;
+
+                return ListTile(
+                  title: Text(request.name),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.check, color: Colors.green),
-                        onPressed: () => acceptRequest(request),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.red),
-                        onPressed: () => deleteRequest(request),
-                      ),
+                      Text(DateFormat('MMMM d, y')
+                          .format(request.date.toDate())),
+                      Text(request.time),
                     ],
                   ),
-          );
-        },
+                  trailing: isCreatedByCurrentUser
+                      ? IconButton(
+                          icon: const Icon(Icons.close, color: Colors.red),
+                          onPressed: () => deleteRequest(request),
+                        )
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon:
+                                  const Icon(Icons.check, color: Colors.green),
+                              onPressed: () => acceptRequest(request),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close, color: Colors.red),
+                              onPressed: () => deleteRequest(request),
+                            ),
+                          ],
+                        ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
-}
-
-class Place {
-  final String placeId;
-  final String description;
-
-  Place({required this.placeId, required this.description});
 }

@@ -4,7 +4,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'dart:math';
 import '../../../core/widgets/no_internet.dart';
-import '../../../theming/colors.dart';
 
 class MapScreen extends StatefulWidget {
   final String latitude, longitude, title, description;
@@ -95,17 +94,16 @@ class _MapScreenState extends State<MapScreen> {
       body: OfflineBuilder(
         connectivityBuilder: (
           BuildContext context,
-          ConnectivityResult connectivity,
+          List<ConnectivityResult> connectivity,
           Widget child,
         ) {
-          final bool connected = connectivity != ConnectivityResult.none;
+          final bool connected =
+              connectivity.contains(ConnectivityResult.mobile) ||
+                  connectivity.contains(ConnectivityResult.wifi);
+
           return connected ? _mapPage(context) : const BuildNoInternet();
         },
-        child: const Center(
-          child: CircularProgressIndicator(
-            color: ColorsManager.mainBlue,
-          ),
-        ),
+        child: _mapPage(context),
       ),
     );
   }
