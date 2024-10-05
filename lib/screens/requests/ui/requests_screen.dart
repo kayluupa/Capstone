@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:math';
 
 class User {
   final String id;
@@ -28,8 +30,8 @@ class MeetingRequest {
   final String toUserId;
   final String toRequestId;
   final String time;
-  final String lat;
-  final String lng;
+  final double lat;
+  final double lng;
   String name;
 
   MeetingRequest({
@@ -54,8 +56,8 @@ class MeetingRequest {
       toRequestId: data['toRequestId'] ?? '',
       date: data['date'] ?? Timestamp.now(),
       time: data['time'] ?? 'No Time',
-      lat: data['lat'] ?? '0.0',
-      lng: data['lng'] ?? '0.0',
+      lat: data['lat'] ?? 0.0,
+      lng: data['lng'] ?? 0.0,
       name: '',
     );
   }
@@ -66,6 +68,30 @@ class Place {
   final String description;
 
   Place({required this.placeId, required this.description});
+}
+
+double radians(double degrees) {
+  return degrees * (pi / 180.0);
+}
+
+double degrees(double radians) {
+  return radians * 180 / pi;
+}
+
+LatLng _calculateMidpoint(LatLng point1, LatLng point2) {
+  double lat1 = radians(point1.latitude);
+  double lng1 = radians(point1.longitude);
+  double lat2 = radians(point2.latitude);
+  double lng2 = radians(point2.longitude);
+
+  double dLng = lng2 - lng1;
+  double x = cos(lat2) * cos(dLng);
+  double y = cos(lat2) * sin(dLng);
+  double mLat = atan2(
+      sin(lat1) + sin(lat2), sqrt((cos(lat1) + x) * (cos(lat1) + x) + y * y));
+  double mLng = lng1 + atan2(y, cos(lat1) + x);
+
+  return LatLng(degrees(mLat), degrees(mLng));
 }
 
 class RequestsScreen extends StatefulWidget {
@@ -80,8 +106,8 @@ class RequestsScreenState extends State<RequestsScreen> {
   late String userId;
   late TextEditingController _locationController;
   List<Place> searchResults = [];
-  String _latitude = "";
-  String _longitude = "";
+  double _latitude = 0.0;
+  double _longitude = 0.0;
 
   @override
   void initState() {
@@ -117,24 +143,35 @@ class RequestsScreenState extends State<RequestsScreen> {
           .map((doc) => MeetingRequest.fromFirestore(doc))
           .toList();
 
+      Set<String> userIds = {};
       for (var request in requests) {
-        String targetUserId = request.fromUserId == userId
-            ? request.toUserId
-            : request.fromUserId;
-        DocumentSnapshot<Map<String, dynamic>> userDoc = await FirebaseFirestore
-            .instance
-            .collection('users')
-            .doc(targetUserId)
-            .get();
-        String name = userDoc.data()?['name'] ?? 'No Name';
-        request.name = name;
+        userIds.add(request.fromUserId);
+        userIds.add(request.toUserId);
       }
 
-      meetingRequests = requests;
+      if (userIds.isNotEmpty) {
+        FirebaseFirestore.instance
+            .collection('users')
+            .where(FieldPath.documentId, whereIn: userIds.toList())
+            .get()
+            .then((QuerySnapshot<Map<String, dynamic>> snapshot) {
+          Map<String, String> userNames = {};
+          for (var doc in snapshot.docs) {
+            userNames[doc.id] = doc.data()['name'] ?? 'No Name';
+          }
 
-      setState(() {});
+          setState(() {
+            for (var request in requests) {
+              request.name = userNames[request.fromUserId] ?? 'No Name';
+            }
+            meetingRequests = requests;
+          });
+        }).catchError((error) {
+          showErrorMessage('Error fetching user names: $error');
+        });
+      }
     } catch (e) {
-      showErrorMessage(e.toString());
+      showErrorMessage('Error fetching meeting requests: $e');
     }
   }
 
@@ -154,6 +191,20 @@ class RequestsScreenState extends State<RequestsScreen> {
     final newLocation = _locationController.text;
 
     if (newLocation.isNotEmpty) {
+      DocumentSnapshot<Map<String, dynamic>> fromRequestDoc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(request.fromUserId)
+              .collection('requests')
+              .doc(request.fromRequestId)
+              .get();
+
+      double fromLat = fromRequestDoc.data()?['lat'] ?? 0.0;
+      double fromLng = fromRequestDoc.data()?['lng'] ?? 0.0;
+
+      LatLng midpoint = _calculateMidpoint(
+          LatLng(fromLat, fromLng), LatLng(_latitude, _longitude));
+
       final initFromRef = FirebaseFirestore.instance
           .collection('users')
           .doc(request.fromUserId)
@@ -174,8 +225,8 @@ class RequestsScreenState extends State<RequestsScreen> {
         'name': null,
         'date': request.date,
         'time': request.time,
-        'lat': _latitude,
-        'lng': _longitude,
+        'lat': midpoint.latitude,
+        'lng': midpoint.longitude,
       };
 
       await initFromRef.set(meetingData);
@@ -270,8 +321,8 @@ class RequestsScreenState extends State<RequestsScreen> {
         double lat = location['lat'];
         double lng = location['lng'];
         setState(() {
-          _latitude = lat.toString();
-          _longitude = lng.toString();
+          _latitude = lat;
+          _longitude = lng;
         });
       }
     }
@@ -294,8 +345,7 @@ class RequestsScreenState extends State<RequestsScreen> {
                   searchPlaces(value);
                 } else {
                   setState(() {
-                    searchResults
-                        .clear();
+                    searchResults.clear();
                   });
                 }
               },
@@ -317,8 +367,7 @@ class RequestsScreenState extends State<RequestsScreen> {
                       _locationController.text =
                           searchResults[index].description;
                       setState(() {
-                        searchResults
-                            .clear();
+                        searchResults.clear();
                       });
                     },
                   );
