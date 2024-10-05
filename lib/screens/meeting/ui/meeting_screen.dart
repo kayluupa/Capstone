@@ -9,8 +9,8 @@ import '/routing/routes.dart';
 class Meeting {
   final String name;
   final String time;
-  final String lat;
-  final String lng;
+  final double lat;
+  final double lng;
 
   Meeting({
     required this.name,

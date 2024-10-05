@@ -35,8 +35,8 @@ class CreateMeetingState extends State<CreateMeeting> {
 
   List<User> userResults = [];
   List<Place> searchResults = [];
-  String _latitude = "";
-  String _longitude = "";
+  double _latitude = 0.0;
+  double _longitude = 0.0;
   TimeOfDay? selectedTime;
   String? selectedUserId;
 
@@ -307,8 +307,8 @@ class CreateMeetingState extends State<CreateMeeting> {
         double lat = location['lat'];
         double lng = location['lng'];
         setState(() {
-          _latitude = lat.toString();
-          _longitude = lng.toString();
+          _latitude = lat;
+          _longitude = lng;
         });
       }
     }
