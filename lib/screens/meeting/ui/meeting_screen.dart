@@ -7,13 +7,13 @@ import 'package:intl/intl.dart';
 import '/routing/routes.dart';
 
 class Meeting {
-  final String userEmail;
+  final String name;
   final String time;
   final String lat;
   final String lng;
 
   Meeting({
-    required this.userEmail,
+    required this.name,
     required this.time,
     required this.lat,
     required this.lng,
@@ -22,7 +22,7 @@ class Meeting {
   factory Meeting.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
     return Meeting(
-      userEmail: data['user'] ?? 'No Email',
+      name: data['name'] ?? 'No Name',
       time: data['time'] ?? 'No Time',
       lat: data['lat'] ?? '0.0',
       lng: data['lng'] ?? '0.0',
@@ -135,7 +135,7 @@ Widget build(BuildContext context) {
               itemCount: meetings.length,
               itemBuilder: (context, index) {
                 return ListTile(
-                  title: Text(meetings[index].userEmail),
+                  title: Text(meetings[index].name),
                   subtitle: Text(meetings[index].time),
                   trailing: IconButton(
                     onPressed: () {
@@ -145,8 +145,6 @@ Widget build(BuildContext context) {
                         arguments: {
                           'latitude': meetings[index].lat,
                           'longitude': meetings[index].lng,
-                          'title': meetings[index].userEmail,
-                          'description': meetings[index].time,
                         },
                       );
                     },
