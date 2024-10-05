@@ -9,8 +9,8 @@ import '/routing/routes.dart';
 class Meeting {
   final String name;
   final String time;
-  final String lat;
-  final String lng;
+  final double lat;
+  final double lng;
 
   Meeting({
     required this.name,
@@ -95,9 +95,9 @@ class MeetingScreenState extends State<MeetingScreen> {
   }
 
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
         title: Text(DateFormat('EEEE, MMMM d, yyyy').format(widget.day)),
       ),
       body: Column(
@@ -105,7 +105,7 @@ Widget build(BuildContext context) {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: SizedBox(
-              width: double.infinity, 
+              width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () async {
                   try {

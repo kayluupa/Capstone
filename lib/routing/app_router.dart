@@ -22,10 +22,9 @@ class AppRouter {
     final DateTime? day = args?['day'] as DateTime?;
     final Function()? refreshMeetingsList =
         args?['refreshMeetingsList'] as Function()?;
-    final String? latitude = args?['latitude'];
-    final String? longitude = args?['longitude'];
-    final String? title = args?['title'];
-    final String? description = args?['description'];
+    final double? latitude = args?['latitude'];
+    final double? longitude = args?['longitude'];
+    final String? name = args?['name'];
 
     switch (settings.name) {
       case Routes.forgetScreen:
@@ -62,10 +61,9 @@ class AppRouter {
       case Routes.mapScreen:
         return MaterialPageRoute(
           builder: (_) => MapScreen(
-              latitude: latitude ?? "0.0",
-              longitude: longitude ?? "0.0",
-              title: title ?? "",
-              description: description ?? ""),
+              latitude: latitude ?? 0.0,
+              longitude: longitude ?? 0.0,
+              name: name ?? ""),
         );
       case Routes.meetingScreen:
         return MaterialPageRoute(
