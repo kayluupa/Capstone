@@ -62,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.map),
+              leading: const Icon(Icons.event),
               title: const Text('Meeting Requests'),
               onTap: () {
                 Navigator.pushNamed(context, Routes.requestsScreen);

@@ -72,9 +72,8 @@ class _AccountScreenState extends State<AccountScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications), // Add notification icon
+            icon: const Icon(Icons.notifications),
             onPressed: () {
-              // Define behavior for the notification button
             },
           ),
         ],
@@ -117,34 +116,72 @@ class _AccountScreenState extends State<AccountScreen> {
               } else {
                 return Column(
                   children: [
-                    GestureDetector(
-                      onTap: _uploadImage,
-                      child: SizedBox(
-                          height: 200,
-                          width: 200,
-                          child: _image == null
-                              ? (FirebaseAuth.instance.currentUser!.photoURL ==
-                                      null
-                                  ? Image.asset('assets/placeholder.png')
-                                  : FadeInImage.assetNetwork(
-                                      placeholder: 'assets/placeholder.png',
-                                      image: FirebaseAuth
-                                          .instance.currentUser!.photoURL!,
-                                      fit: BoxFit.cover,
-                                    ))
-                              : Image.file(_image!, fit: BoxFit.cover)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: _uploadImage,
+                          child: SizedBox(
+                            height: 120,
+                            width: 120,
+                            child: _image == null
+                                ? (FirebaseAuth.instance.currentUser!.photoURL ==
+                                        null
+                                    ? Image.asset('assets/placeholder.png')
+                                    : FadeInImage.assetNetwork(
+                                        placeholder: 'assets/placeholder.png',
+                                        image: FirebaseAuth
+                                            .instance.currentUser!.photoURL!,
+                                        fit: BoxFit.cover,
+                                      ))
+                                : Image.file(_image!, fit: BoxFit.cover),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        ElevatedButton(
+                          onPressed: _uploadImage,
+                          child: const Text('Change Picture'),
+                        ),
+                      ],
                     ),
                     const Gap(20),
                     Text(
-                      FirebaseAuth.instance.currentUser!.displayName!,
+                      FirebaseAuth.instance.currentUser!.displayName ?? 'No Name',
                       style: TextStyles.font15DarkBlue500Weight
                           .copyWith(fontSize: 30.sp),
                     ),
-                    Text(
-                      snapshot.data!,
-                      style: TextStyles.font15DarkBlue500Weight,
+                    const Gap(10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Email',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Gap(8),
+                        Text(
+                          FirebaseAuth.instance.currentUser!.email ?? 'No Email',
+                          style: TextStyles.font15DarkBlue500Weight,
+                        ),
+                        const Gap(20),
+                        Text(
+                          'Phone Number',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Gap(8),
+                        Text(
+                          snapshot.data!,
+                          style: TextStyles.font15DarkBlue500Weight,
+                        ),
+                      ],
                     ),
-                    const Gap(20),
+                    const Gap(30),
                     Center(
                       child: SizedBox(
                         height: 50.w,
@@ -154,7 +191,6 @@ class _AccountScreenState extends State<AccountScreen> {
                           textStyle: TextStyles.font15DarkBlue500Weight,
                           onPressed: () async {
                             try {
-                              //GoogleSignIn().disconnect();
                               FirebaseAuth.instance.signOut();
                               context.pushNamedAndRemoveUntil(
                                 Routes.loginScreen,
