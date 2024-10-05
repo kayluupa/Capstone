@@ -30,6 +30,7 @@ class SettingsScreen extends StatelessWidget {
             title: const Text('Notifications'),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () {
+              Navigator.pushNamed(context, '/notifScreen');
             },
           ),
           ListTile(

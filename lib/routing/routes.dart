@@ -10,4 +10,5 @@ class Routes {
   static const String createMeeting = "/createMeeting";
   static const String settingsScreen = "/settingsScreen";
   static const String requestsScreen = "/requestsScreen";
+  static const String notifScreen = "/notifScreen";
 }

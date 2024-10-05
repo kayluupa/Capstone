@@ -44,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: <Widget>[
             const DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.blue,
+                color: Color.fromARGB(255, 124, 33, 243),
               ),
               child: Text(
                 'Get Connected!',

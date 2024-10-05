@@ -186,9 +186,14 @@ class _AccountScreenState extends State<AccountScreen> {
                       child: SizedBox(
                         height: 50.w,
                         width: 100.w,
-                        child: AppTextButton(
-                          buttonText: 'Sign Out',
-                          textStyle: TextStyles.font15DarkBlue500Weight,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color.fromARGB(255, 124, 33, 243), 
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
                           onPressed: () async {
                             try {
                               FirebaseAuth.instance.signOut();
@@ -206,6 +211,7 @@ class _AccountScreenState extends State<AccountScreen> {
                               ).show();
                             }
                           },
+                          child: const Text('Sign Out'),
                         ),
                       ),
                     ),
