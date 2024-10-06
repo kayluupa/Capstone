@@ -11,7 +11,8 @@ import '../screens/meeting/ui/meeting_screen.dart';
 import '../screens/meeting/ui/create_meeting.dart';
 import '../screens/settings/ui/settings_screen.dart';
 import '../screens/requests/ui/requests_screen.dart';
-import '../screens/notifs/ui/notif_screen.dart';
+import '../screens/settings/ui/notif_screen.dart';
+import '../screens/settings/ui/help_screen.dart';
 import 'routes.dart';
 
 class AppRouter {
@@ -87,6 +88,10 @@ class AppRouter {
       case Routes.notifScreen:
         return MaterialPageRoute(
           builder: (_) => const NotifScreen(),
+        );
+      case Routes.helpScreen:
+        return MaterialPageRoute(
+          builder: (_) => const HelpScreen(),
         );
     }
     return null;

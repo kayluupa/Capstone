@@ -43,6 +43,7 @@ class SettingsScreen extends StatelessWidget {
             title: const Text('Help'),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () {
+              Navigator.pushNamed(context, '/helpScreen');
             },
           ),
           ListTile(
