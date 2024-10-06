@@ -38,22 +38,46 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Color.fromARGB(255, 124, 33, 243),
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                color: const Color.fromARGB(255, 124, 33, 243),
               ),
-              child: Text(
-                'Get Connected!',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Get Connected!',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                    ),
+                  ),
+                  const Spacer(), // Adds some spacing
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/girl.png',
+                        height: 100, // Adjust the height as needed
+                        fit: BoxFit.contain,
+                      ),
+                      const SizedBox(width: 10), // Add spacing between the images
+                      Image.asset(
+                        'assets/guy.png',
+                        height: 100, // Adjust the height as needed
+                        fit: BoxFit.contain,
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
+
             ListTile(
               leading: const Icon(Icons.home),
               title: const Text('Home'),
@@ -85,6 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+
       body: OfflineBuilder(
         connectivityBuilder: (
           BuildContext context,
