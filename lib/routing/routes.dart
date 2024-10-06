@@ -12,4 +12,6 @@ class Routes {
   static const String requestsScreen = "/requestsScreen";
   static const String notifScreen = "/notifScreen";
   static const String helpScreen = "/helpScreen";
+  static const String privacyScreen = "/privacyScreen";
+  static const String tandcScreen = "/tandcScreen";
 }

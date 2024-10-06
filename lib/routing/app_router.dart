@@ -13,6 +13,8 @@ import '../screens/settings/ui/settings_screen.dart';
 import '../screens/requests/ui/requests_screen.dart';
 import '../screens/settings/ui/notif_screen.dart';
 import '../screens/settings/ui/help_screen.dart';
+import '../screens/settings/ui/privacy_screen.dart';
+import '../screens/settings/ui/tandc_screen.dart';
 import 'routes.dart';
 
 class AppRouter {
@@ -92,6 +94,14 @@ class AppRouter {
       case Routes.helpScreen:
         return MaterialPageRoute(
           builder: (_) => const HelpScreen(),
+        );
+      case Routes.privacyScreen:
+        return MaterialPageRoute(
+          builder: (_) => const PrivacyScreen(),
+        );
+      case Routes.tandcScreen:
+        return MaterialPageRoute(
+          builder: (_) => const TandCScreen(),
         );
     }
     return null;
