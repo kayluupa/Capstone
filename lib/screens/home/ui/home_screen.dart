@@ -1,10 +1,52 @@
-// import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 import '../../../core/widgets/no_internet.dart';
 import '/routing/routes.dart';
+
+class Meeting {
+  final Timestamp date;
+  final String fromUserId;
+  final String fromRequestId;
+  final String toUserId;
+  final String toRequestId;
+  final String time;
+  final double lat;
+  final double lng;
+  String name;
+
+  Meeting({
+    required this.fromUserId,
+    required this.fromRequestId,
+    required this.toUserId,
+    required this.toRequestId,
+    required this.date,
+    required this.time,
+    required this.lat,
+    required this.lng,
+    required this.name,
+  });
+
+  factory Meeting.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+    final data = doc.data() ?? {};
+    return Meeting(
+      fromUserId: data['fromUserId'] ?? '',
+      fromRequestId: data['fromRequestId'] ?? '',
+      toUserId: data['toUserId'] ?? '',
+      toRequestId: data['toRequestId'] ?? '',
+      date: data['date'] ?? Timestamp.now(),
+      time: data['time'] ?? 'No Time',
+      lat: data['lat'] ?? 0.0,
+      lng: data['lng'] ?? 0.0,
+      name: data['name'] ?? 'No Name',
+    );
+  }
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,6 +57,78 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   DateTime today = DateTime.now();
+  late String userId;
+  List<Meeting> upcomingMeetings = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCurrentUserAndMeetings();
+  }
+
+  void fetchCurrentUserAndMeetings() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      userId = user.uid;
+      fetchUpcomingMeetings();
+    }
+  }
+
+  void fetchUpcomingMeetings() async {
+    try {
+      final QuerySnapshot<Map<String, dynamic>> snapshot =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userId)
+              .collection('meetings')
+              .where('date',
+                  isGreaterThanOrEqualTo: Timestamp.fromDate(DateTime.now()))
+              .orderBy('date', descending: false)
+              .limit(3)
+              .get();
+
+      upcomingMeetings =
+          snapshot.docs.map((doc) => Meeting.fromFirestore(doc)).toList();
+      setState(() {});
+    } catch (e) {
+      showErrorMessage(e.toString());
+    }
+  }
+
+  void showErrorMessage(String message) async {
+    await AwesomeDialog(
+      context: context,
+      dialogType: DialogType.info,
+      animType: AnimType.rightSlide,
+      title: 'Error',
+      desc: message.isNotEmpty ? message : 'An unknown error occurred.',
+    ).show();
+  }
+
+  void deleteMeeting(Meeting meeting) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(meeting.fromUserId)
+          .collection('requests')
+          .doc(meeting.fromRequestId)
+          .delete();
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(meeting.toUserId)
+          .collection('requests')
+          .doc(meeting.toRequestId)
+          .delete();
+
+      setState(() {
+        upcomingMeetings.remove(meeting);
+      });
+    } catch (e) {
+      showErrorMessage(e.toString());
+    }
+  }
+
   void _onDaySelected(DateTime day, DateTime focusedDay) {
     setState(() {
       today = day;
@@ -38,14 +152,13 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
               decoration: const BoxDecoration(
-                color: const Color.fromARGB(255, 124, 33, 243),
+                color: Color.fromARGB(255, 124, 33, 243),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,19 +170,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontSize: 24,
                     ),
                   ),
-                  const Spacer(), // Adds some spacing
+                  const Spacer(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset(
                         'assets/girl.png',
-                        height: 100, // Adjust the height as needed
+                        height: 100,
                         fit: BoxFit.contain,
                       ),
-                      const SizedBox(width: 10), // Add spacing between the images
+                      const SizedBox(width: 10),
                       Image.asset(
                         'assets/guy.png',
-                        height: 100, // Adjust the height as needed
+                        height: 100,
                         fit: BoxFit.contain,
                       ),
                     ],
@@ -77,7 +190,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-
             ListTile(
               leading: const Icon(Icons.home),
               title: const Text('Home'),
@@ -109,7 +221,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-
       body: OfflineBuilder(
         connectivityBuilder: (
           BuildContext context,
@@ -138,7 +249,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 locale: "en_US",
                 headerStyle: const HeaderStyle(
                     formatButtonVisible: false, titleCentered: true),
-                //avaibleGestures: AvailableGestures.all,
                 selectedDayPredicate: (day) => isSameDay(day, today),
                 focusedDay: today,
                 firstDay: DateTime.utc(2024, 1, 1),
@@ -153,7 +263,86 @@ class _HomeScreenState extends State<HomeScreen> {
                   textAlign: TextAlign.center,
                 ),
               ),
-            ], //closer for children
+              if (upcomingMeetings.isNotEmpty) ...[
+                const Padding(
+                  padding: EdgeInsets.only(top: 16.0),
+                  child: Text(
+                    "Upcoming Meetings:",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: upcomingMeetings.length,
+                  itemBuilder: (context, index) {
+                    final meeting = upcomingMeetings[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 16.0),
+                      elevation: 3,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment
+                              .spaceBetween, // Align items horizontally
+                          children: [
+                            Expanded(
+                              // This makes the title and subtitle take up available space
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    meeting.name,
+                                    style: const TextStyle(
+                                      fontSize: 18.0,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                      height:
+                                          4.0), // Reduced height for better compactness
+                                  Text(
+                                    DateFormat('yyyy-MM-dd – kk:mm')
+                                        .format(meeting.date.toDate()),
+                                    style: const TextStyle(fontSize: 16.0),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Buttons aligned in a row
+                            Row(
+                              mainAxisSize: MainAxisSize
+                                  .min, // Minimize the size of the row
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.map),
+                                  onPressed: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      Routes.mapScreen,
+                                      arguments: {
+                                        'latitude': meeting.lat,
+                                        'longitude': meeting.lng,
+                                      },
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.close,
+                                      color: Colors.red),
+                                  onPressed: () => deleteMeeting(meeting),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                )
+              ],
+            ],
           ),
         ),
       ),

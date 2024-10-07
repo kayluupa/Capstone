@@ -7,25 +7,40 @@ import 'package:intl/intl.dart';
 import '/routing/routes.dart';
 
 class Meeting {
-  final String name;
+  final Timestamp date;
+  final String fromUserId;
+  final String fromRequestId;
+  final String toUserId;
+  final String toRequestId;
   final String time;
   final double lat;
   final double lng;
+  String name;
 
   Meeting({
-    required this.name,
+    required this.fromUserId,
+    required this.fromRequestId,
+    required this.toUserId,
+    required this.toRequestId,
+    required this.date,
     required this.time,
     required this.lat,
     required this.lng,
+    required this.name,
   });
 
   factory Meeting.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
     return Meeting(
-      name: data['name'] ?? 'No Name',
+      fromUserId: data['fromUserId'] ?? '',
+      fromRequestId: data['fromRequestId'] ?? '',
+      toUserId: data['toUserId'] ?? '',
+      toRequestId: data['toRequestId'] ?? '',
+      date: data['date'] ?? Timestamp.now(),
       time: data['time'] ?? 'No Time',
-      lat: data['lat'] ?? '0.0',
-      lng: data['lng'] ?? '0.0',
+      lat: data['lat'] ?? 0.0,
+      lng: data['lng'] ?? 0.0,
+      name: data['name'] ?? 'No Name',
     );
   }
 }
@@ -94,6 +109,31 @@ class MeetingScreenState extends State<MeetingScreen> {
     ).show();
   }
 
+  void deleteMeeting(Meeting meeting) async {
+    try {
+      print('Debug Check');
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(meeting.fromUserId)
+          .collection('requests')
+          .doc(meeting.fromRequestId)
+          .delete();
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(meeting.toUserId)
+          .collection('requests')
+          .doc(meeting.toRequestId)
+          .delete();
+
+      setState(() {
+        meetings.remove(meeting);
+      });
+    } catch (e) {
+      showErrorMessage(e.toString());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -134,26 +174,62 @@ class MeetingScreenState extends State<MeetingScreen> {
             child: ListView.builder(
               itemCount: meetings.length,
               itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(meetings[index].name),
-                  subtitle: Text(meetings[index].time),
-                  trailing: IconButton(
-                    onPressed: () {
-                      Navigator.pushNamed(
-                        context,
-                        Routes.mapScreen,
-                        arguments: {
-                          'latitude': meetings[index].lat,
-                          'longitude': meetings[index].lng,
-                        },
-                      );
-                    },
-                    icon: const Icon(Icons.map),
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 8.0, horizontal: 16.0),
+                  child: Card(
+                    elevation: 4.0,
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 16.0, horizontal: 16.0),
+                      title: Text(
+                        meetings[index].name,
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 8),
+                          Text(
+                            'Time: ${meetings[index].time}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Date: ${DateFormat('MMMM d, yyyy').format(meetings[index].date.toDate())}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ],
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              Navigator.pushNamed(
+                                context,
+                                Routes.mapScreen,
+                                arguments: {
+                                  'latitude': meetings[index].lat,
+                                  'longitude': meetings[index].lng,
+                                },
+                              );
+                            },
+                            icon: const Icon(Icons.map),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close, color: Colors.red),
+                            onPressed: () => deleteMeeting(meetings[index]),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 );
               },
             ),
-          ),
+          )
         ],
       ),
     );
