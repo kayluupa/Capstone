@@ -188,7 +188,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         width: 100.w,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromARGB(255, 124, 33, 243), 
+                            backgroundColor: const Color.fromARGB(255, 124, 33, 243), 
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),

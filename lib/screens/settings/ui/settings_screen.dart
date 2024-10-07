@@ -34,27 +34,24 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           ListTile(
-            title: const Text('About Us'),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
-            },
-          ),
-          ListTile(
             title: const Text('Help'),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () {
+              Navigator.pushNamed(context, '/helpScreen');
             },
           ),
           ListTile(
             title: const Text('Privacy Policy'),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () {
+              Navigator.pushNamed(context, '/privacyScreen');
             },
           ),
           ListTile(
             title: const Text('Terms & Conditions'),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () {
+              Navigator.pushNamed(context, '/tandcScreen');
             },
           ),
           const SizedBox(height: 20.0),
