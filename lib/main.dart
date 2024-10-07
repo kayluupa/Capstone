@@ -1,3 +1,4 @@
+import 'package:capstone/helpers/firebase_msg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 // import 'package:cloud_functions/cloud_functions.dart';
@@ -10,6 +11,7 @@ import 'routing/routes.dart';
 import 'firebase_options.dart';
 
 late String initialRoute;
+final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +29,7 @@ void main() async {
   );
   DateTime today = DateTime.now(); // Define today here
   await ScreenUtil.ensureScreenSize();
+  await PushNotifs().initNotifs();
   runApp(MyApp(router: AppRouter(), today: today)); // Pass today to MyApp
 }
 
@@ -51,9 +54,9 @@ class MyApp extends StatelessWidget {
           onGenerateRoute: (settings) => router.generateRoute(settings),
           debugShowCheckedModeBanner: false,
           initialRoute: initialRoute,
+          navigatorKey: navigatorKey,
         );
       },
     );
   }
 }
-

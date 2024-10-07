@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'dart:convert';
+import '../../../helpers/firebase_msg.dart' as firebaseMsg;
 
 class CreateMeeting extends StatefulWidget {
   final DateTime day;
@@ -101,6 +103,38 @@ class CreateMeetingState extends State<CreateMeeting> {
     popCallback();
   }
 
+  void sendNotification() async {
+    final pushNotifs = firebaseMsg.PushNotifs();
+
+    final token = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(selectedUserId)
+        .collection('tokens')
+        .doc('t1')
+        .get()
+        .then((doc) => doc['token']);
+
+    final fromUserName = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get()
+        .then((doc) => doc['name']);
+
+    String date = DateFormat('MM/dd/yy')
+        .format(widget.day.toUtc().add(const Duration(hours: 5)));
+
+    String time = selectedTime != null
+        ? '${selectedTime!.hour}:${selectedTime!.minute}'
+        : 'TBD';
+
+    pushNotifs.sendPushMessage(
+        token,
+        'Meeting Request from $fromUserName',
+        'Meeting on $date - $time',
+        Timestamp.fromDate(widget.day.toUtc().add(const Duration(hours: 5))),
+        'requests_screen');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -177,6 +211,7 @@ class CreateMeetingState extends State<CreateMeeting> {
                   const SizedBox(height: 50),
                   ElevatedButton(
                     onPressed: () async {
+                      sendNotification();
                       showDialog(
                         context: context,
                         barrierDismissible: false,

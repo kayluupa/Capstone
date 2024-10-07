@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:math';
+import '../../../helpers/firebase_msg.dart' as firebaseMsg;
 
 class User {
   final String id;
@@ -108,6 +109,7 @@ class RequestsScreenState extends State<RequestsScreen> {
   List<Place> searchResults = [];
   double _latitude = 0.0;
   double _longitude = 0.0;
+  final pushNotifs = firebaseMsg.PushNotifs();
 
   @override
   void initState() {
@@ -238,21 +240,38 @@ class RequestsScreenState extends State<RequestsScreen> {
             .collection('users')
             .doc(request.toUserId)
             .get();
-        String name = userDoc.data()?['name'] ?? 'No Name';
+        String toUserName = userDoc.data()?['name'] ?? 'No Name';
 
         if (userDoc.exists) {
-          await initFromRef.update({'name': name});
+          await initFromRef.update({'name': toUserName});
         }
 
         userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(request.fromUserId)
             .get();
-        name = userDoc.data()?['name'] ?? 'No Name';
+        String fromUserName = userDoc.data()?['name'] ?? 'No Name';
 
         if (userDoc.exists) {
-          await initToRef.update({'name': name});
+          await initToRef.update({'name': fromUserName});
         }
+
+        final token = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(request.fromUserId)
+            .collection('tokens')
+            .doc('t1')
+            .get()
+            .then((doc) => doc['token']);
+
+        String date = DateFormat('MM/dd/yy').format(request.date.toDate());
+
+        pushNotifs.sendPushMessage(
+            token,
+            'Meeting Accepted by $toUserName',
+            'Meeting on $date - ${request.time}',
+            request.date,
+            'meeting_screen');
       } catch (e) {
         showErrorMessage(e.toString());
       }
