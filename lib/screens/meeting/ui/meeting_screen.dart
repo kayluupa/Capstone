@@ -111,18 +111,17 @@ class MeetingScreenState extends State<MeetingScreen> {
 
   void deleteMeeting(Meeting meeting) async {
     try {
-      print('Debug Check');
       await FirebaseFirestore.instance
           .collection('users')
           .doc(meeting.fromUserId)
-          .collection('requests')
+          .collection('meetings')
           .doc(meeting.fromRequestId)
           .delete();
 
       await FirebaseFirestore.instance
           .collection('users')
           .doc(meeting.toUserId)
-          .collection('requests')
+          .collection('meetings')
           .doc(meeting.toRequestId)
           .delete();
 
