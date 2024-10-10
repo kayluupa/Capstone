@@ -110,20 +110,18 @@ class _HomeScreenState extends State<HomeScreen> {
       await FirebaseFirestore.instance
           .collection('users')
           .doc(meeting.fromUserId)
-          .collection('requests')
+          .collection('meetings')
           .doc(meeting.fromRequestId)
           .delete();
 
       await FirebaseFirestore.instance
           .collection('users')
           .doc(meeting.toUserId)
-          .collection('requests')
+          .collection('meetings')
           .doc(meeting.toRequestId)
           .delete();
 
-      setState(() {
-        upcomingMeetings.remove(meeting);
-      });
+      fetchUpcomingMeetings();
     } catch (e) {
       showErrorMessage(e.toString());
     }
