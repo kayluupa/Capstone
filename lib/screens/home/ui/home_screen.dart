@@ -66,6 +66,25 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchCurrentUserAndMeetings();
   }
 
+  void _navigateToMeetingScreen(DateTime day) async {
+    final shouldRefresh = await Navigator.pushNamed(
+        context, Routes.meetingScreen,
+        arguments: {'day': day});
+
+    if (shouldRefresh == true) {
+      fetchUpcomingMeetings(); // Refresh the upcoming meetings
+    }
+  }
+
+  void _navigateToRequestsScreen() async {
+    final shouldRefresh =
+        await Navigator.pushNamed(context, Routes.requestsScreen);
+
+    if (shouldRefresh == true) {
+      fetchUpcomingMeetings();
+    }
+  }
+
   void fetchCurrentUserAndMeetings() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -131,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       today = day;
     });
-    Navigator.pushNamed(context, Routes.meetingScreen, arguments: {'day': day});
+    _navigateToMeetingScreen(day);
   }
 
   @override
@@ -199,7 +218,8 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: const Icon(Icons.event),
               title: const Text('Meeting Requests'),
               onTap: () {
-                Navigator.pushNamed(context, Routes.requestsScreen);
+                Navigator.pop(context);
+                _navigateToRequestsScreen();
               },
             ),
             ListTile(

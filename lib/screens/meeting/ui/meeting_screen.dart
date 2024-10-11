@@ -138,6 +138,12 @@ class MeetingScreenState extends State<MeetingScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(DateFormat('EEEE, MMMM d, yyyy').format(widget.day)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context, true);
+          },
+        ),
       ),
       body: Column(
         children: [

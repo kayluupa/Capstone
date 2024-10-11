@@ -352,6 +352,12 @@ class RequestsScreenState extends State<RequestsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Meeting Requests'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context, true);
+          },
+        ),
       ),
       body: Column(
         children: [
