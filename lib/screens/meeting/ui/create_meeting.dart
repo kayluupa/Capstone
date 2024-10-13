@@ -1,3 +1,4 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -54,6 +55,18 @@ class CreateMeetingState extends State<CreateMeeting> {
     _userController.dispose();
     _locationController.dispose();
     super.dispose();
+  }
+
+  void showErrorMessage(String message) async {
+    if (!mounted) return;
+    final currentContext = context;
+    await AwesomeDialog(
+      context: currentContext,
+      dialogType: DialogType.info,
+      animType: AnimType.rightSlide,
+      title: 'Error',
+      desc: message.isNotEmpty ? message : 'An unknown error occurred.',
+    ).show();
   }
 
   Future<void> createMeeting(VoidCallback popCallback) async {
@@ -211,18 +224,45 @@ class CreateMeetingState extends State<CreateMeeting> {
                   const SizedBox(height: 50),
                   ElevatedButton(
                     onPressed: () async {
-                      sendNotification();
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (context) => const Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      );
-                      await createMeeting(() {
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                      });
+                      final currentUserEmail =
+                          FirebaseAuth.instance.currentUser!.email;
+
+                      if (_userController.text.isEmpty ||
+                          _locationController.text.isEmpty ||
+                          selectedTime == null) {
+                        showErrorMessage('Please fill in all fields.');
+                        return;
+                      }
+
+                      if (_userController.text == currentUserEmail) {
+                        showErrorMessage(
+                            'You cannot create a meeting with yourself.');
+                        return;
+                      }
+
+                      if (selectedUserId == null) {
+                        showErrorMessage(
+                            'Please select a valid user from the list.');
+                        return;
+                      }
+
+                      try {
+                        sendNotification();
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                        await createMeeting(() {
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                        });
+                      } catch (e) {
+                        showErrorMessage(
+                            'Failed to create the meeting. Please try again.');
+                      }
                     },
                     child: const Text('Create Meeting'),
                   ),
