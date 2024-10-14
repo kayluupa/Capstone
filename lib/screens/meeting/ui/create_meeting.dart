@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'dart:convert';
-import '../../../helpers/firebase_msg.dart' as firebaseMsg;
+import '../../../helpers/firebase_msg.dart' as firebase_msg;
 
 class CreateMeeting extends StatefulWidget {
   final DateTime day;
@@ -125,7 +125,7 @@ class CreateMeetingState extends State<CreateMeeting> {
   }
 
   void sendNotification() async {
-    final pushNotifs = firebaseMsg.PushNotifs();
+    final pushNotifs = firebase_msg.PushNotifs();
 
     final token = await FirebaseFirestore.instance
         .collection('users')
