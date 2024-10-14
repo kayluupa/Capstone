@@ -53,6 +53,7 @@ dependencies:
   googleapis: 13.2.0
   url_launcher: ^6.0.20
   flutter_dotenv: ^5.1.0
+  mailer: ^6.2.0
 
 dev_dependencies:
   flutter_lints: ^5.0.0

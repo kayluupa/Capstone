@@ -235,43 +235,42 @@ class RequestsScreenState extends State<RequestsScreen> {
       await initToRef.set(meetingData);
 
       try {
-        DocumentSnapshot<Map<String, dynamic>> userDoc = await FirebaseFirestore
-            .instance
+        final fromUserDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(request.fromUserId)
+            .get();
+
+        final toUserDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(request.toUserId)
             .get();
-        String toUserName = userDoc.data()?['name'] ?? 'No Name';
 
-        if (userDoc.exists) {
-          await initFromRef.update({'name': toUserName});
+        if (toUserDoc.exists) {
+          await initFromRef.update({'name': toUserDoc['name']});
         }
 
-        userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(request.fromUserId)
-            .get();
-        String fromUserName = userDoc.data()?['name'] ?? 'No Name';
+        if (fromUserDoc.exists) {
+          await initToRef.update({'name': fromUserDoc['name']});
 
-        if (userDoc.exists) {
-          await initToRef.update({'name': fromUserName});
+          final token = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(request.fromUserId)
+              .collection('tokens')
+              .doc('t1')
+              .get()
+              .then((doc) => doc['token']);
+
+          String date = DateFormat('MM/dd/yy').format(request.date.toDate());
+
+          if (fromUserDoc['push notification'] == true) {
+            pushNotifs.sendPushMessage(
+                token,
+                'Meeting Accepted by ${toUserDoc['name']}',
+                'Meeting on $date - ${request.time}',
+                request.date,
+                'meeting_screen');
+          }
         }
-
-        final token = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(request.fromUserId)
-            .collection('tokens')
-            .doc('t1')
-            .get()
-            .then((doc) => doc['token']);
-
-        String date = DateFormat('MM/dd/yy').format(request.date.toDate());
-
-        pushNotifs.sendPushMessage(
-            token,
-            'Meeting Accepted by $toUserName',
-            'Meeting on $date - ${request.time}',
-            request.date,
-            'meeting_screen');
       } catch (e) {
         showErrorMessage(e.toString());
       }

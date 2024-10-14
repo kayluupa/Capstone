@@ -71,6 +71,10 @@ class CreateMeetingState extends State<CreateMeeting> {
 
   Future<void> createMeeting(VoidCallback popCallback) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    final selectedUserDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(selectedUserId)
+        .get();
 
     if (selectedUserId != null) {
       final initRef = FirebaseFirestore.instance
@@ -110,6 +114,10 @@ class CreateMeetingState extends State<CreateMeeting> {
         'lat': _latitude,
         'lng': _longitude,
       });
+    }
+    
+    if (selectedUserDoc.exists && selectedUserDoc['push notification'] == true) {
+      sendNotification();
     }
 
     widget.refreshMeetingsList();
@@ -247,7 +255,6 @@ class CreateMeetingState extends State<CreateMeeting> {
                       }
 
                       try {
-                        sendNotification();
                         showDialog(
                           context: context,
                           barrierDismissible: false,
