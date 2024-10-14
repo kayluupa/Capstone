@@ -21,12 +21,15 @@ class _HelpScreenState extends State<HelpScreen> {
       query: 'subject=User Feedback from $email&body=$message',
     );
 
-    if (await canLaunch(emailUri.toString())) {
-      await launch(emailUri.toString());
+    if (await canLaunchUrl(emailUri)) {
+      await launchUrl(emailUri);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not send email. Please try again.')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Could not send email. Please try again.')),
+        );
+      }
     }
   }
 
@@ -68,7 +71,8 @@ class _HelpScreenState extends State<HelpScreen> {
               child: ElevatedButton(
                 onPressed: _sendEmail,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromARGB(255, 124, 33, 243), // Match the purple color
+                  backgroundColor: Color.fromARGB(
+                      255, 124, 33, 243), // Match the purple color
                   foregroundColor: Colors.white,
                 ),
                 child: const Text('Send Email'),

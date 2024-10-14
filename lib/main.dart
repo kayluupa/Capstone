@@ -4,16 +4,16 @@ import 'package:firebase_core/firebase_core.dart';
 // import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'routing/app_router.dart';
 import 'routing/routes.dart';
-
-// import the configuration file you generated using Firebase CLI
 import 'firebase_options.dart';
 
 late String initialRoute;
 final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
+  await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -27,10 +27,10 @@ void main() async {
       }
     },
   );
-  DateTime today = DateTime.now(); // Define today here
+  DateTime today = DateTime.now();
   await ScreenUtil.ensureScreenSize();
   await PushNotifs().initNotifs();
-  runApp(MyApp(router: AppRouter(), today: today)); // Pass today to MyApp
+  runApp(MyApp(router: AppRouter(), today: today));
 }
 
 class MyApp extends StatelessWidget {

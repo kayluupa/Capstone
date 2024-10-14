@@ -31,6 +31,6 @@ class AppRegex {
   }
 
   static bool isPhoneNumberValid(String phoneNumber) {
-    return RegExp(r'^(940|214|980|469|817|347)[0-9]{7}$').hasMatch(phoneNumber);
+    return RegExp(r'^\d{10}$').hasMatch(phoneNumber);
   }
 }

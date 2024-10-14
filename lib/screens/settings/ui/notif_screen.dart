@@ -1,7 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class NotifScreen extends StatelessWidget {
+class NotifScreen extends StatefulWidget {
   const NotifScreen({super.key});
+
+  @override
+  NotifScreenState createState() => NotifScreenState();
+}
+
+class NotifScreenState extends State<NotifScreen> {
+  bool _pushNotification = true;
+  bool _emailNotification = true;
+  final String userId = FirebaseAuth.instance.currentUser!.uid;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchNotificationSettings();
+  }
+
+  Future<void> _fetchNotificationSettings() async {
+    final userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    if (userDoc.exists) {
+      setState(() {
+        _pushNotification = userDoc['push notification'] ?? true;
+        _emailNotification = userDoc['email notification'] ?? true;
+      });
+    }
+  }
+
+  Future<void> _updateNotificationSettings(String field, bool value) async {
+    await FirebaseFirestore.instance.collection('users').doc(userId).update({
+      field: value,
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,17 +49,23 @@ class NotifScreen extends StatelessWidget {
           children: [
             SwitchListTile(
               title: const Text('Enable Push Notifications'),
-              value: true, 
+              value: _pushNotification,
               onChanged: (bool value) {
-                // toggle logic here
+                setState(() {
+                  _pushNotification = value;
+                });
+                _updateNotificationSettings('push notification', value);
               },
             ),
             const SizedBox(height: 16),
             SwitchListTile(
               title: const Text('Enable Email Notifications'),
-              value: true, 
+              value: _emailNotification,
               onChanged: (bool value) {
-                // toggle logic here
+                setState(() {
+                  _emailNotification = value;
+                });
+                _updateNotificationSettings('email notification', value);
               },
             ),
           ],

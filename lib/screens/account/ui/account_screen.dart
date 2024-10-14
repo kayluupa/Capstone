@@ -14,7 +14,6 @@ import '../../../core/widgets/no_internet.dart';
 import '/helpers/extensions.dart';
 import '/routing/routes.dart';
 import '/theming/styles.dart';
-import '../../../core/widgets/app_text_button.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
