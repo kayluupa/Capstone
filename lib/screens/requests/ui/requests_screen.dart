@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:math';
-import '../../../helpers/firebase_msg.dart' as firebaseMsg;
+import '../../../helpers/firebase_msg.dart' as firebase_msg;
 
 class User {
   final String id;
@@ -109,7 +109,7 @@ class RequestsScreenState extends State<RequestsScreen> {
   List<Place> searchResults = [];
   double _latitude = 0.0;
   double _longitude = 0.0;
-  final pushNotifs = firebaseMsg.PushNotifs();
+  final pushNotifs = firebase_msg.PushNotifs();
 
   @override
   void initState() {
