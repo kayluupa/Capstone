@@ -4,8 +4,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:mailer/mailer.dart';
+import 'package:mailer/smtp_server.dart';
+import 'dart:convert';
 import 'dart:math';
 import '../../../helpers/firebase_msg.dart' as firebase_msg;
 
@@ -269,6 +272,25 @@ class RequestsScreenState extends State<RequestsScreen> {
                 'Meeting on $date - ${request.time}',
                 request.date,
                 'meeting_screen');
+          }
+
+          if (fromUserDoc['email notification'] == true) {
+            final String username = dotenv.env['GROUP_EMAIL'] ?? '';
+            final smtpServer =
+                gmail(username, dotenv.env['GROUP_PASSWORD'] ?? '');
+
+            final message = Message()
+              ..from = Address(username, 'Meet Me Halfway')
+              ..recipients.add({fromUserDoc['email']})
+              ..subject = 'New Meeting'
+              ..text =
+                  'Meeting accepted by ${toUserDoc['name']} on $date - ${request.time}';
+
+            try {
+              await send(message, smtpServer);
+            } catch (e) {
+              showErrorMessage('Email not sent.');
+            }
           }
         }
       } catch (e) {

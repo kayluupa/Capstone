@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class HelpScreen extends StatefulWidget {
   const HelpScreen({super.key});
@@ -17,7 +18,7 @@ class _HelpScreenState extends State<HelpScreen> {
     final String message = _messageController.text;
     final Uri emailUri = Uri(
       scheme: 'mailto',
-      path: 'algorithmavengers4901@gmail.com',
+      path: dotenv.env['GROUP_EMAIL'],
       query: 'subject=User Feedback from $email&body=$message',
     );
 
