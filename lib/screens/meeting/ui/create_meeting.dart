@@ -4,6 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:mailer/mailer.dart';
+import 'package:mailer/smtp_server.dart';
 import 'dart:convert';
 import '../../../helpers/firebase_msg.dart' as firebase_msg;
 
@@ -70,6 +73,11 @@ class CreateMeetingState extends State<CreateMeeting> {
   }
 
   Future<void> createMeeting(VoidCallback popCallback) async {
+    String date = DateFormat('MM/dd/yy')
+        .format(widget.day.toUtc().add(const Duration(hours: 5)));
+    String time = selectedTime != null
+        ? '${selectedTime!.hour}:${selectedTime!.minute}'
+        : 'TBD';
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     final selectedUserDoc = await FirebaseFirestore.instance
         .collection('users')
@@ -95,9 +103,7 @@ class CreateMeetingState extends State<CreateMeeting> {
         'toUserId': selectedUserId,
         'toRequestId': selRef.id,
         'date': widget.day.toUtc().add(const Duration(hours: 5)),
-        'time': selectedTime != null
-            ? '${selectedTime!.hour}:${selectedTime!.minute}'
-            : null,
+        'time': time,
         'lat': null,
         'lng': null,
         'location': null,
@@ -115,16 +121,27 @@ class CreateMeetingState extends State<CreateMeeting> {
         'lng': _longitude,
       });
     }
-    
-    if (selectedUserDoc.exists && selectedUserDoc['push notification'] == true) {
-      sendNotification();
+
+    final fromUserName = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUserId)
+        .get()
+        .then((doc) => doc['name']);
+
+    if (selectedUserDoc.exists) {
+      if (selectedUserDoc['push notification'] == true) {
+        sendNotification(fromUserName, date, time);
+      }
+      if (selectedUserDoc['email notification'] == true) {
+        sendEmail(fromUserName, selectedUserDoc['email'], date, time);
+      }
     }
 
     widget.refreshMeetingsList();
     popCallback();
   }
 
-  void sendNotification() async {
+  void sendNotification(String fromUserName, String date, String time) async {
     final pushNotifs = firebase_msg.PushNotifs();
 
     final token = await FirebaseFirestore.instance
@@ -135,25 +152,32 @@ class CreateMeetingState extends State<CreateMeeting> {
         .get()
         .then((doc) => doc['token']);
 
-    final fromUserName = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .get()
-        .then((doc) => doc['name']);
-
-    String date = DateFormat('MM/dd/yy')
-        .format(widget.day.toUtc().add(const Duration(hours: 5)));
-
-    String time = selectedTime != null
-        ? '${selectedTime!.hour}:${selectedTime!.minute}'
-        : 'TBD';
-
     pushNotifs.sendPushMessage(
         token,
         'Meeting Request from $fromUserName',
         'Meeting on $date - $time',
         Timestamp.fromDate(widget.day.toUtc().add(const Duration(hours: 5))),
         'requests_screen');
+  }
+
+  void sendEmail(
+      String fromUserName, String toUserEmail, String date, String time) async {
+    final String username = dotenv.env['GROUP_EMAIL'] ?? '';
+    final String password = dotenv.env['GROUP_PASSWORD'] ?? '';
+
+    final smtpServer = gmail(username, password);
+
+    final message = Message()
+      ..from = Address(username, 'Meet Me Halfway')
+      ..recipients.add(toUserEmail)
+      ..subject = 'New Request'
+      ..text = 'Meeting request from $fromUserName on $date - $time';
+
+    try {
+      await send(message, smtpServer);
+    } catch (e) {
+      showErrorMessage('Email not sent.');
+    }
   }
 
   @override
