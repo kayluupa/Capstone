@@ -281,7 +281,7 @@ class RequestsScreenState extends State<RequestsScreen> {
 
             final message = Message()
               ..from = Address(username, 'Meet Me Halfway')
-              ..recipients.add({fromUserDoc['email']})
+              ..recipients.add(fromUserDoc['email'])
               ..subject = 'New Meeting'
               ..text =
                   'Meeting accepted by ${toUserDoc['name']} on $date - ${request.time}';

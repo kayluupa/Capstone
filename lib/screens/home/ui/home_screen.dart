@@ -67,22 +67,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _navigateToMeetingScreen(DateTime day) async {
-    final shouldRefresh = await Navigator.pushNamed(
-        context, Routes.meetingScreen,
+    await Navigator.pushNamed(context, Routes.meetingScreen,
         arguments: {'day': day});
 
-    if (shouldRefresh == true) {
-      fetchUpcomingMeetings(); // Refresh the upcoming meetings
-    }
+    fetchUpcomingMeetings();
   }
 
   void _navigateToRequestsScreen() async {
-    final shouldRefresh =
-        await Navigator.pushNamed(context, Routes.requestsScreen);
+    await Navigator.pushNamed(context, Routes.requestsScreen);
 
-    if (shouldRefresh == true) {
-      fetchUpcomingMeetings();
-    }
+    fetchUpcomingMeetings();
   }
 
   void fetchCurrentUserAndMeetings() async {
@@ -218,15 +212,8 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: const Icon(Icons.event),
               title: const Text('Meeting Requests'),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(context, true);
                 _navigateToRequestsScreen();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.map),
-              title: const Text('Map'),
-              onTap: () {
-                Navigator.pushNamed(context, Routes.mapScreen);
               },
             ),
             ListTile(
