@@ -1,7 +1,48 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../theming/theme_notifier.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  SettingsScreenState createState() => SettingsScreenState();
+}
+
+class SettingsScreenState extends State<SettingsScreen> {
+  bool _isDarkMode = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserDarkModeSetting();
+  }
+
+  Future<void> _loadUserDarkModeSetting() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      setState(() {
+        _isDarkMode = userDoc['dark mode'] ?? true;
+      });
+    }
+  }
+
+  Future<void> _updateUserDarkModeSetting(bool value) async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .update({'dark mode': value});
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +64,7 @@ class SettingsScreen extends StatelessWidget {
             title: const Text('Account'),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () {
-              Navigator.pushNamed(context, '/accountScreen');  
+              Navigator.pushNamed(context, '/accountScreen');
             },
           ),
           ListTile(
@@ -52,6 +93,18 @@ class SettingsScreen extends StatelessWidget {
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () {
               Navigator.pushNamed(context, '/tandcScreen');
+            },
+          ),
+          SwitchListTile(
+            title: const Text('Dark Mode'),
+            value: _isDarkMode,
+            onChanged: (bool value) {
+              setState(() {
+                _isDarkMode = value;
+              });
+              _updateUserDarkModeSetting(value);
+              Provider.of<ThemeNotifier>(context, listen: false)
+                  .toggleTheme(value);
             },
           ),
           const SizedBox(height: 20.0),

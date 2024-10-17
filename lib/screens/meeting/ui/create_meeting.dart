@@ -76,7 +76,7 @@ class CreateMeetingState extends State<CreateMeeting> {
     String date = DateFormat('MM/dd/yy')
         .format(widget.day.toUtc().add(const Duration(hours: 5)));
     String time = selectedTime != null
-        ? '${selectedTime!.hour}:${selectedTime!.minute}'
+        ? '${selectedTime!.hour.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')}'
         : 'TBD';
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     final selectedUserDoc = await FirebaseFirestore.instance
@@ -171,7 +171,7 @@ class CreateMeetingState extends State<CreateMeeting> {
       ..from = Address(username, 'Meet Me Halfway')
       ..recipients.add(toUserEmail)
       ..subject = 'New Request'
-      ..text = 'Meeting request from $fromUserName on $date - $time';
+      ..text = 'Meeting request from $fromUserName for $date - $time';
 
     try {
       await send(message, smtpServer);
@@ -234,7 +234,7 @@ class CreateMeetingState extends State<CreateMeeting> {
                       ),
                       child: Text(
                         selectedTime != null
-                            ? '${selectedTime!.hour}:${selectedTime!.minute}'
+                            ? '${selectedTime!.hour.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')}'
                             : 'Select a time',
                       ),
                     ),

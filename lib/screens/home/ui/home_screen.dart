@@ -289,11 +289,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment
-                              .spaceBetween, // Align items horizontally
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
-                              // This makes the title and subtitle take up available space
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -304,21 +302,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  const SizedBox(
-                                      height:
-                                          4.0), // Reduced height for better compactness
+                                  const SizedBox(height: 4.0),
                                   Text(
-                                    DateFormat('yyyy-MM-dd – kk:mm')
-                                        .format(meeting.date.toDate()),
+                                    '${DateFormat('MMMM d, yyyy').format(meeting.date.toDate())} - ${meeting.time}',
                                     style: const TextStyle(fontSize: 16.0),
                                   ),
                                 ],
                               ),
                             ),
-                            // Buttons aligned in a row
                             Row(
-                              mainAxisSize: MainAxisSize
-                                  .min, // Minimize the size of the row
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
                                   icon: const Icon(Icons.map),

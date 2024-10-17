@@ -243,6 +243,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
               'phone number': int.tryParse(phoneNumberController.text),
               'push notification': true,
               'email notification': true,
+              'dark mode' : true,
             });
 
             await _auth.signOut();

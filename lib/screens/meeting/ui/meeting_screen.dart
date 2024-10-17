@@ -196,12 +196,12 @@ class MeetingScreenState extends State<MeetingScreen> {
                         children: [
                           const SizedBox(height: 8),
                           Text(
-                            'Time: ${meetings[index].time}',
+                            'Date: ${DateFormat('MMMM d, yyyy').format(meetings[index].date.toDate())}',
                             style: const TextStyle(fontSize: 16),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Date: ${DateFormat('MMMM d, yyyy').format(meetings[index].date.toDate())}',
+                            'Time: ${meetings[index].time}',
                             style: const TextStyle(fontSize: 16),
                           ),
                         ],
