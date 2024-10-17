@@ -284,7 +284,7 @@ class RequestsScreenState extends State<RequestsScreen> {
               ..recipients.add(fromUserDoc['email'])
               ..subject = 'New Meeting'
               ..text =
-                  'Meeting accepted by ${toUserDoc['name']} on $date - ${request.time}';
+                  'Meeting accepted by ${toUserDoc['name']} for $date - ${request.time}';
 
             try {
               await send(message, smtpServer);
