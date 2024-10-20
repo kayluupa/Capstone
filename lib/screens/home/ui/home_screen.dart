@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../../../theming/theme_notifier.dart';
 import '../../../core/widgets/no_internet.dart';
 import '/routing/routes.dart';
 
@@ -59,6 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
   DateTime today = DateTime.now();
   late String userId;
   List<Meeting> upcomingMeetings = [];
+  bool isDarkMode = false;
 
   @override
   void initState() {
@@ -83,7 +86,24 @@ class _HomeScreenState extends State<HomeScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       userId = user.uid;
-      fetchUpcomingMeetings();
+      isDarkMode = await _getUserDarkModeSetting(userId);
+      if (mounted) {
+        fetchUpcomingMeetings();
+        Provider.of<ThemeNotifier>(context, listen: false)
+            .toggleTheme(isDarkMode);
+      }
+    }
+  }
+
+  Future<bool> _getUserDarkModeSetting(String userId) async {
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+      return userDoc['dark mode'];
+    } catch (e) {
+      return false;
     }
   }
 

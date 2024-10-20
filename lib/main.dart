@@ -5,7 +5,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'theming/theme_notifier.dart';
 import 'routing/app_router.dart';
@@ -48,8 +47,7 @@ void main() async {
   await ScreenUtil.ensureScreenSize();
   await PushNotifs().initNotifs();
 
-  // Fetch the user's dark mode setting before running the app
-  bool isDarkMode = await _getUserDarkModeSetting();
+  bool isDarkMode = WidgetsBinding.instance.platformDispatcher.platformBrightness == Brightness.dark;
 
   runApp(
     ChangeNotifierProvider(
@@ -57,18 +55,6 @@ void main() async {
       child: MyApp(router: AppRouter(), today: today),
     ),
   );
-}
-
-Future<bool> _getUserDarkModeSetting() async {
-  User? user = FirebaseAuth.instance.currentUser;
-  if (user != null) {
-    DocumentSnapshot userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .get();
-    return userDoc['dark mode'] ?? true;
-  }
-  return true;
 }
 
 class MyApp extends StatelessWidget {
