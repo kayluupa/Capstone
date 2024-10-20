@@ -22,6 +22,17 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+def envFile = file('../../.env')
+def apiKey = ""
+if (envFile.exists()) {
+    envFile.eachLine { line ->
+        def keyValue = line.split("=")
+        if (keyValue.size() == 2 && keyValue[0].trim() == "API_KEY") {
+            apiKey = keyValue[1].trim().replaceAll(/^"(.*)"$/, '$1')
+        }
+    }
+}
+
 android {
     namespace "com.example.signup_rest_login"
     compileSdkVersion flutter.compileSdkVersion
@@ -42,6 +53,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        manifestPlaceholders['API_KEY'] = apiKey
         applicationId "com.example.signup_rest_login"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.

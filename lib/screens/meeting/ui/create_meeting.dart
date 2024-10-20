@@ -382,7 +382,7 @@ class CreateMeetingState extends State<CreateMeeting> {
   }
 
   Future<void> searchPlaces(String query) async {
-    String apiKey = "AIzaSyDizaB7QZXvI6NY2ppGrbFemKAeZNcGSvc";
+    String apiKey = dotenv.env['API_KEY'] ?? '';
     String url =
         'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$query&types=geocode&key=$apiKey';
     var response = await http.get(Uri.parse(url));
@@ -402,7 +402,7 @@ class CreateMeetingState extends State<CreateMeeting> {
   }
 
   Future<void> selectPlace(String placeId) async {
-    String apiKey = 'AIzaSyDizaB7QZXvI6NY2ppGrbFemKAeZNcGSvc';
+    String apiKey = dotenv.env['API_KEY'] ?? '';
     String url =
         'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=geometry&key=$apiKey';
     var response = await http.get(Uri.parse(url));
