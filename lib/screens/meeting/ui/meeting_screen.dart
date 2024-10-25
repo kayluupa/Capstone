@@ -210,6 +210,29 @@ class MeetingScreenState extends State<MeetingScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
+                            icon: const Icon(Icons.close, color: Colors.red),
+                            onPressed: () {
+                              AwesomeDialog(
+                                context: context,
+                                dialogType: DialogType.question,
+                                animType: AnimType.bottomSlide,
+                                title: 'Cancel Meeting',
+                                desc:
+                                    'Are you sure you want to cancel this meeting?',
+                                btnOkOnPress: () {
+                                  deleteMeeting(meetings[index]);
+                                  AwesomeDialog(
+                                    context: context,
+                                    dialogType: DialogType.info,
+                                    animType: AnimType.rightSlide,
+                                    title: 'Meeting Cancelled',
+                                  ).show();
+                                },
+                                btnCancelOnPress: () {},
+                              ).show();
+                            },
+                          ),
+                          IconButton(
                             onPressed: () {
                               Navigator.pushNamed(
                                 context,
@@ -221,10 +244,6 @@ class MeetingScreenState extends State<MeetingScreen> {
                               );
                             },
                             icon: const Icon(Icons.map),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.close, color: Colors.red),
-                            onPressed: () => deleteMeeting(meetings[index]),
                           ),
                         ],
                       ),

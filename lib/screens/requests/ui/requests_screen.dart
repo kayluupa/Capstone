@@ -440,19 +440,76 @@ class RequestsScreenState extends State<RequestsScreen> {
                   trailing: isCreatedByCurrentUser
                       ? IconButton(
                           icon: const Icon(Icons.close, color: Colors.red),
-                          onPressed: () => deleteRequest(request),
+                          onPressed: () {
+                            AwesomeDialog(
+                              context: context,
+                              dialogType: DialogType.question,
+                              animType: AnimType.bottomSlide,
+                              title: 'Cancel Meeting',
+                              desc:
+                                  'Are you sure you want to cancel this meeting?',
+                              btnOkOnPress: () {
+                                deleteRequest(request);
+                                AwesomeDialog(
+                                  context: context,
+                                  dialogType: DialogType.info,
+                                  animType: AnimType.rightSlide,
+                                  title: 'Meeting Cancelled',
+                                ).show();
+                              },
+                              btnCancelOnPress: () {},
+                            ).show();
+                          },
                         )
                       : Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon:
-                                  const Icon(Icons.check, color: Colors.green),
-                              onPressed: () => acceptRequest(request),
+                              icon: const Icon(Icons.close, color: Colors.red),
+                              onPressed: () {
+                                AwesomeDialog(
+                                  context: context,
+                                  dialogType: DialogType.question,
+                                  animType: AnimType.bottomSlide,
+                                  title: 'Cancel Meeting',
+                                  desc:
+                                      'Are you sure you want to cancel this meeting?',
+                                  btnOkOnPress: () {
+                                    deleteRequest(request);
+                                    AwesomeDialog(
+                                      context: context,
+                                      dialogType: DialogType.info,
+                                      animType: AnimType.rightSlide,
+                                      title: 'Meeting Cancelled',
+                                    ).show();
+                                  },
+                                  btnCancelOnPress: () {},
+                                ).show();
+                              },
                             ),
                             IconButton(
-                              icon: const Icon(Icons.close, color: Colors.red),
-                              onPressed: () => deleteRequest(request),
+                              icon:
+                                  const Icon(Icons.check, color: Colors.green),
+                              onPressed: () {
+                                AwesomeDialog(
+                                  context: context,
+                                  dialogType: DialogType.question,
+                                  animType: AnimType.bottomSlide,
+                                  title: 'Confirm Meeting',
+                                  desc:
+                                      'Are you sure you want to accept this meeting?',
+                                  btnOkOnPress: () {
+                                    acceptRequest(request);
+                                    AwesomeDialog(
+                                      context: context,
+                                      dialogType: DialogType.info,
+                                      animType: AnimType.rightSlide,
+                                      title: 'Meeting Accepted',
+                                    ).show();
+                                  },
+                                  btnCancelOnPress: () {},
+                                ).show();
+                              },
                             ),
                           ],
                         ),
