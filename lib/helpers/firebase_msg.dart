@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:googleapis_auth/auth_io.dart' as auth;
 // import 'package:googleapis/servicecontrol/v1.dart' as servicecontrol;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/material.dart';
 import '../main.dart';
 
 class PushNotifs {
@@ -63,11 +64,30 @@ class PushNotifs {
   }
 
   void _handleMessage(RemoteMessage message) {
-    if (message.data['screen'] == 'meeting_screen') {
-      navigatorKey.currentState?.pushNamed(Routes.meetingScreen,
-          arguments: {'day': DateTime.parse(message.data['date'])});
-    } else if (message.data['screen'] == 'requests_screen') {
-      navigatorKey.currentState?.pushNamed(Routes.requestsScreen);
+    if (message.notification != null) {
+      showDialog(
+        context: navigatorKey.currentState!.overlay!.context,
+        builder: (_) => AlertDialog(
+          title: Text(message.notification!.title ?? "Notification"),
+          content: Text(message.notification!.body ?? "You have a new meeting"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(navigatorKey.currentState!.overlay!.context).pop();
+                if (message.data['screen'] == 'meeting_screen') {
+                  navigatorKey.currentState?.pushNamed(
+                    Routes.meetingScreen,
+                    arguments: {'day': DateTime.parse(message.data['date'])},
+                  );
+                } else if (message.data['screen'] == 'requests_screen') {
+                  navigatorKey.currentState?.pushNamed(Routes.requestsScreen);
+                }
+              },
+              child: const Text("View"),
+            ),
+          ],
+        ),
+      );
     }
   }
 

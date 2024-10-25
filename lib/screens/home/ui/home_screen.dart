@@ -334,6 +334,30 @@ class _HomeScreenState extends State<HomeScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
+                                  icon: const Icon(Icons.close,
+                                      color: Colors.red),
+                                  onPressed: () {
+                                    AwesomeDialog(
+                                      context: context,
+                                      dialogType: DialogType.question,
+                                      animType: AnimType.bottomSlide,
+                                      title: 'Cancel Meeting',
+                                      desc:
+                                          'Are you sure you want to cancel this meeting?',
+                                      btnOkOnPress: () {
+                                        deleteMeeting(meeting);
+                                        AwesomeDialog(
+                                          context: context,
+                                          dialogType: DialogType.info,
+                                          animType: AnimType.rightSlide,
+                                          title: 'Meeting Cancelled',
+                                        ).show();
+                                      },
+                                      btnCancelOnPress: () {},
+                                    ).show();
+                                  },
+                                ),
+                                IconButton(
                                   icon: const Icon(Icons.map),
                                   onPressed: () {
                                     Navigator.pushNamed(
@@ -345,11 +369,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                       },
                                     );
                                   },
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.close,
-                                      color: Colors.red),
-                                  onPressed: () => deleteMeeting(meeting),
                                 ),
                               ],
                             ),
