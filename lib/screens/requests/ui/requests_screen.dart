@@ -11,6 +11,7 @@ import 'package:mailer/smtp_server.dart';
 import 'dart:convert';
 import 'dart:math';
 import '../../../helpers/firebase_msg.dart' as firebase_msg;
+import '/routing/routes.dart';
 
 class User {
   final String id;
@@ -376,7 +377,10 @@ class RequestsScreenState extends State<RequestsScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context, true);
+            Navigator.pushNamed(
+              context,
+              Routes.homeScreen,
+            );
           },
         ),
       ),

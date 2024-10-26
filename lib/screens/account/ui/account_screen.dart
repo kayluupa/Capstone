@@ -34,8 +34,13 @@ class _AccountScreenState extends State<AccountScreen> {
         .child("Profile Pictures")
         .child('${FirebaseAuth.instance.currentUser!.uid}.png');
     if (pickedImage != null) {
+      final metadata = SettableMetadata(
+        customMetadata: {
+          'owner': FirebaseAuth.instance.currentUser!.uid,
+        },
+      );
       File imageFile = File(pickedImage.path);
-      await storageRef.putFile(imageFile);
+      await storageRef.putFile(imageFile, metadata);
       String downloadURL = await storageRef.getDownloadURL();
       await FirebaseAuth.instance.currentUser!.updatePhotoURL(downloadURL);
       setState(() {
@@ -72,8 +77,7 @@ class _AccountScreenState extends State<AccountScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications),
-            onPressed: () {
-            },
+            onPressed: () {},
           ),
         ],
       ),
@@ -89,8 +93,7 @@ class _AccountScreenState extends State<AccountScreen> {
 
           return connected ? _accountPage(context) : const BuildNoInternet();
         },
-        child: _accountPage(
-            context),
+        child: _accountPage(context),
       ),
     );
   }
@@ -124,7 +127,8 @@ class _AccountScreenState extends State<AccountScreen> {
                             height: 120,
                             width: 120,
                             child: _image == null
-                                ? (FirebaseAuth.instance.currentUser!.photoURL ==
+                                ? (FirebaseAuth
+                                            .instance.currentUser!.photoURL ==
                                         null
                                     ? Image.asset('assets/placeholder.png')
                                     : FadeInImage.assetNetwork(
@@ -145,7 +149,8 @@ class _AccountScreenState extends State<AccountScreen> {
                     ),
                     const Gap(20),
                     Text(
-                      FirebaseAuth.instance.currentUser!.displayName ?? 'No Name',
+                      FirebaseAuth.instance.currentUser!.displayName ??
+                          'No Name',
                       style: TextStyles.font15DarkBlue500Weight
                           .copyWith(fontSize: 30.sp),
                     ),
@@ -162,7 +167,8 @@ class _AccountScreenState extends State<AccountScreen> {
                         ),
                         const Gap(8),
                         Text(
-                          FirebaseAuth.instance.currentUser!.email ?? 'No Email',
+                          FirebaseAuth.instance.currentUser!.email ??
+                              'No Email',
                           style: TextStyles.font15DarkBlue500Weight,
                         ),
                         const Gap(20),
@@ -187,7 +193,8 @@ class _AccountScreenState extends State<AccountScreen> {
                         width: 100.w,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(255, 124, 33, 243), 
+                            backgroundColor:
+                                const Color.fromARGB(255, 124, 33, 243),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
