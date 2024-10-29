@@ -12,12 +12,11 @@ import '../../../core/widgets/no_internet.dart';
 import '/routing/routes.dart';
 
 class Meeting {
-  final Timestamp date;
   final String fromUserId;
   final String fromRequestId;
   final String toUserId;
   final String toRequestId;
-  final String time;
+  final Timestamp date;
   final double lat;
   final double lng;
   String name;
@@ -28,7 +27,6 @@ class Meeting {
     required this.toUserId,
     required this.toRequestId,
     required this.date,
-    required this.time,
     required this.lat,
     required this.lng,
     required this.name,
@@ -37,12 +35,11 @@ class Meeting {
   factory Meeting.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
     return Meeting(
-      fromUserId: data['fromUserId'] ?? '',
-      fromRequestId: data['fromRequestId'] ?? '',
-      toUserId: data['toUserId'] ?? '',
-      toRequestId: data['toRequestId'] ?? '',
+      fromUserId: data['fromUserId'] ?? 'No User',
+      fromRequestId: data['fromRequestId'] ?? 'No User',
+      toUserId: data['toUserId'] ?? 'No User',
+      toRequestId: data['toRequestId'] ?? 'No User',
       date: data['date'] ?? Timestamp.now(),
-      time: data['time'] ?? 'No Time',
       lat: data['lat'] ?? 0.0,
       lng: data['lng'] ?? 0.0,
       name: data['name'] ?? 'No Name',
@@ -324,7 +321,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   const SizedBox(height: 4.0),
                                   Text(
-                                    '${DateFormat('MMMM d, yyyy').format(meeting.date.toDate())} - ${meeting.time}',
+                                    '${DateFormat('MMMM d, yyyy').format(meeting.date.toDate().toLocal())} - ${DateFormat('hh:mm a').format(meeting.date.toDate().toLocal())}',
                                     style: const TextStyle(fontSize: 16.0),
                                   ),
                                 ],

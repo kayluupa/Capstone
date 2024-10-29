@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:timezone/data/latest.dart' as tz;
 import 'theming/theme_notifier.dart';
 import 'routing/app_router.dart';
 import 'routing/routes.dart';
@@ -28,6 +29,7 @@ ThemeData darkTheme = ThemeData(
 
 void main() async {
   await dotenv.load(fileName: ".env");
+  tz.initializeTimeZones();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

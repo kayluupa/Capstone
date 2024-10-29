@@ -31,10 +31,10 @@ class Meeting {
   factory Meeting.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
     return Meeting(
-      fromUserId: data['fromUserId'] ?? '',
-      fromRequestId: data['fromRequestId'] ?? '',
-      toUserId: data['toUserId'] ?? '',
-      toRequestId: data['toRequestId'] ?? '',
+      fromUserId: data['fromUserId'] ?? 'No User',
+      fromRequestId: data['fromRequestId'] ?? 'No User',
+      toUserId: data['toUserId'] ?? 'No User',
+      toRequestId: data['toRequestId'] ?? 'No User',
       date: data['date'] ?? Timestamp.now(),
       time: data['time'] ?? 'No Time',
       lat: data['lat'] ?? 0.0,
@@ -196,12 +196,12 @@ class MeetingScreenState extends State<MeetingScreen> {
                         children: [
                           const SizedBox(height: 8),
                           Text(
-                            'Date: ${DateFormat('MMMM d, yyyy').format(meetings[index].date.toDate())}',
+                            'Date: ${DateFormat('MMMM d, yyyy').format(meetings[index].date.toDate().toLocal())}',
                             style: const TextStyle(fontSize: 16),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Time: ${meetings[index].time}',
+                            'Time: ${DateFormat('hh:mm a').format(meetings[index].date.toDate().toLocal())}',
                             style: const TextStyle(fontSize: 16),
                           ),
                         ],

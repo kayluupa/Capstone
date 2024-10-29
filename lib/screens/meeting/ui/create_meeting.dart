@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
+import 'package:timezone/timezone.dart' as tz;
 import 'dart:convert';
 import '../../../helpers/firebase_msg.dart' as firebase_msg;
 
@@ -73,11 +74,17 @@ class CreateMeetingState extends State<CreateMeeting> {
   }
 
   Future<void> createMeeting(VoidCallback popCallback) async {
-    String date = DateFormat('MM/dd/yy')
-        .format(widget.day.toUtc().add(const Duration(hours: 5)));
-    String time = selectedTime != null
-        ? '${selectedTime!.hour.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')}'
-        : 'TBD';
+    DateTime utcDate = widget.day.toUtc();
+    utcDate = DateTime(
+        utcDate.year,
+        utcDate.month,
+        utcDate.day,
+        selectedTime?.hour ?? utcDate.hour,
+        selectedTime?.minute ?? utcDate.minute);
+    DateTime convertedDate =
+        tz.TZDateTime.from(utcDate, tz.getLocation('America/Chicago'));
+    String date = DateFormat('MM/dd/yy').format(convertedDate);
+    String time = DateFormat('hh:mm a').format(convertedDate);
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     final selectedUserDoc = await FirebaseFirestore.instance
         .collection('users')
@@ -102,8 +109,7 @@ class CreateMeetingState extends State<CreateMeeting> {
         'fromRequestId': initRef.id,
         'toUserId': selectedUserId,
         'toRequestId': selRef.id,
-        'date': widget.day.toUtc().add(const Duration(hours: 5)),
-        'time': time,
+        'date': date,
         'lat': null,
         'lng': null,
         'location': null,
@@ -130,7 +136,7 @@ class CreateMeetingState extends State<CreateMeeting> {
 
     if (selectedUserDoc.exists) {
       if (selectedUserDoc['push notification'] == true) {
-        sendNotification(fromUserName, date, time);
+        sendNotification(fromUserName, utcDate, date, time);
       }
       if (selectedUserDoc['email notification'] == true) {
         sendEmail(fromUserName, selectedUserDoc['email'], date, time);
@@ -141,7 +147,8 @@ class CreateMeetingState extends State<CreateMeeting> {
     popCallback();
   }
 
-  void sendNotification(String fromUserName, String date, String time) async {
+  void sendNotification(
+      String fromUserName, DateTime date, String day, String time) async {
     final pushNotifs = firebase_msg.PushNotifs();
 
     final token = await FirebaseFirestore.instance
@@ -155,13 +162,13 @@ class CreateMeetingState extends State<CreateMeeting> {
     pushNotifs.sendPushMessage(
         token,
         'Meeting Request from $fromUserName',
-        'Meeting on $date - $time',
-        Timestamp.fromDate(widget.day.toUtc().add(const Duration(hours: 5))),
+        'Meeting on $day - $time Central Time',
+        Timestamp.fromDate(date),
         'requests_screen');
   }
 
   void sendEmail(
-      String fromUserName, String toUserEmail, String date, String time) async {
+      String fromUserName, String toUserEmail, String day, String time) async {
     final String username = dotenv.env['GROUP_EMAIL'] ?? '';
     final String password = dotenv.env['GROUP_PASSWORD'] ?? '';
 
@@ -171,7 +178,8 @@ class CreateMeetingState extends State<CreateMeeting> {
       ..from = Address(username, 'Meet Me Halfway')
       ..recipients.add(toUserEmail)
       ..subject = 'New Request'
-      ..text = 'Meeting request from $fromUserName for $date - $time';
+      ..text =
+          'Meeting request from $fromUserName for $day - $time Central Time';
 
     try {
       await send(message, smtpServer);
@@ -306,8 +314,14 @@ class CreateMeetingState extends State<CreateMeeting> {
                   right: 16,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: Colors.grey),
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? const Color.fromARGB(255, 48, 48, 48)
+                          : Colors.white,
+                      border: Border.all(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? const Color.fromARGB(255, 158, 158, 158)
+                            : const Color.fromARGB(255, 158, 158, 158),
+                      ),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: ListView.builder(
@@ -316,7 +330,15 @@ class CreateMeetingState extends State<CreateMeeting> {
                       physics: const NeverScrollableScrollPhysics(),
                       itemBuilder: (context, index) {
                         return ListTile(
-                          title: Text(userResults[index].email),
+                          title: Text(
+                            userResults[index].email,
+                            style: TextStyle(
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                          ),
                           onTap: () {
                             setState(() {
                               _userController.text = userResults[index].email;
@@ -336,8 +358,14 @@ class CreateMeetingState extends State<CreateMeeting> {
                   right: 16,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: Colors.grey),
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.grey[850]
+                          : Colors.white,
+                      border: Border.all(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.grey
+                            : Colors.grey,
+                      ),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: ListView.builder(
@@ -346,7 +374,15 @@ class CreateMeetingState extends State<CreateMeeting> {
                       physics: const NeverScrollableScrollPhysics(),
                       itemBuilder: (context, index) {
                         return ListTile(
-                          title: Text(searchResults[index].description),
+                          title: Text(
+                            searchResults[index].description,
+                            style: TextStyle(
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white // White text for dark mode
+                                  : Colors.black, // Black text for light mode
+                            ),
+                          ),
                           onTap: () {
                             selectPlace(searchResults[index].placeId);
                             _locationController.text =

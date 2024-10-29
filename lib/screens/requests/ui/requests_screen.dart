@@ -8,6 +8,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
+import 'package:timezone/timezone.dart' as tz;
 import 'dart:convert';
 import 'dart:math';
 import '../../../helpers/firebase_msg.dart' as firebase_msg;
@@ -29,12 +30,11 @@ class User {
 }
 
 class MeetingRequest {
-  final Timestamp date;
   final String fromUserId;
   final String fromRequestId;
   final String toUserId;
   final String toRequestId;
-  final String time;
+  final Timestamp date;
   final double lat;
   final double lng;
   String name;
@@ -45,7 +45,6 @@ class MeetingRequest {
     required this.toUserId,
     required this.toRequestId,
     required this.date,
-    required this.time,
     required this.lat,
     required this.lng,
     required this.name,
@@ -55,15 +54,14 @@ class MeetingRequest {
       DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
     return MeetingRequest(
-      fromUserId: data['fromUserId'] ?? '',
-      fromRequestId: data['fromRequestId'] ?? '',
-      toUserId: data['toUserId'] ?? '',
-      toRequestId: data['toRequestId'] ?? '',
+      fromUserId: data['fromUserId'] ?? 'No User',
+      fromRequestId: data['fromRequestId'] ?? 'No User',
+      toUserId: data['toUserId'] ?? 'No User',
+      toRequestId: data['toRequestId'] ?? 'No User',
       date: data['date'] ?? Timestamp.now(),
-      time: data['time'] ?? 'No Time',
       lat: data['lat'] ?? 0.0,
       lng: data['lng'] ?? 0.0,
-      name: '',
+      name: 'No Name',
     );
   }
 }
@@ -230,7 +228,6 @@ class RequestsScreenState extends State<RequestsScreen> {
         'toRequestId': initToRef.id,
         'name': null,
         'date': request.date,
-        'time': request.time,
         'lat': midpoint.latitude,
         'lng': midpoint.longitude,
       };
@@ -264,13 +261,16 @@ class RequestsScreenState extends State<RequestsScreen> {
               .get()
               .then((doc) => doc['token']);
 
-          String date = DateFormat('MM/dd/yy').format(request.date.toDate());
+          DateTime utcDate = request.date.toDate();
+          tz.TZDateTime convertedDate = tz.TZDateTime.from(utcDate.toUtc(), tz.getLocation('America/Chicago'));
+          String date = DateFormat('MM/dd/yy').format(convertedDate);
+          String time = DateFormat('hh:mm a').format(convertedDate);
 
           if (fromUserDoc['push notification'] == true) {
             pushNotifs.sendPushMessage(
                 token,
                 'Meeting Accepted by ${toUserDoc['name']}',
-                'Meeting on $date - ${request.time}',
+                'Meeting on $date - $time Central Time',
                 request.date,
                 'meeting_screen');
           }
@@ -285,7 +285,7 @@ class RequestsScreenState extends State<RequestsScreen> {
               ..recipients.add(fromUserDoc['email'])
               ..subject = 'New Meeting'
               ..text =
-                  'Meeting accepted by ${toUserDoc['name']} for $date - ${request.time}';
+                  'Meeting accepted by ${toUserDoc['name']} for $date - $time Central Time';
 
             try {
               await send(message, smtpServer);
@@ -371,6 +371,12 @@ class RequestsScreenState extends State<RequestsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor =
+        isDarkMode ? const Color.fromARGB(255, 48, 48, 48) : Colors.white;
+    final borderColor = const Color.fromARGB(255, 158, 158, 158);
+    final textColor = isDarkMode ? Colors.white : Colors.black;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Meeting Requests'),
@@ -399,10 +405,23 @@ class RequestsScreenState extends State<RequestsScreen> {
                   });
                 }
               },
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Enter Location',
-                border: OutlineInputBorder(),
+                hintStyle: TextStyle(
+                  color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+                ),
+                filled: true,
+                fillColor: backgroundColor,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: BorderSide(color: borderColor),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: BorderSide(color: borderColor),
+                ),
               ),
+              style: TextStyle(color: textColor),
             ),
           ),
           if (searchResults.isNotEmpty)
@@ -410,65 +429,63 @@ class RequestsScreenState extends State<RequestsScreen> {
               child: ListView.builder(
                 itemCount: searchResults.length,
                 itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(searchResults[index].description),
-                    onTap: () {
-                      selectPlace(searchResults[index].placeId);
-                      _locationController.text =
-                          searchResults[index].description;
-                      setState(() {
-                        searchResults.clear();
-                      });
-                    },
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: backgroundColor,
+                      border: Border(bottom: BorderSide(color: borderColor)),
+                    ),
+                    child: ListTile(
+                      title: Text(
+                        searchResults[index].description,
+                        style: TextStyle(color: textColor),
+                      ),
+                      onTap: () {
+                        selectPlace(searchResults[index].placeId);
+                        _locationController.text =
+                            searchResults[index].description;
+                        setState(() {
+                          searchResults.clear();
+                        });
+                      },
+                    ),
                   );
                 },
               ),
             ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: meetingRequests.length,
-              itemBuilder: (context, index) {
-                final request = meetingRequests[index];
-                final isCreatedByCurrentUser = request.fromUserId == userId;
+          if (searchResults.isEmpty)
+            Expanded(
+              child: ListView.builder(
+                itemCount: meetingRequests.length,
+                itemBuilder: (context, index) {
+                  final request = meetingRequests[index];
+                  final isCreatedByCurrentUser = request.fromUserId == userId;
 
-                return ListTile(
-                  title: Text(request.name),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(DateFormat('MMMM d, y')
-                          .format(request.date.toDate())),
-                      Text(request.time),
-                    ],
-                  ),
-                  trailing: isCreatedByCurrentUser
-                      ? IconButton(
-                          icon: const Icon(Icons.close, color: Colors.red),
-                          onPressed: () {
-                            AwesomeDialog(
-                              context: context,
-                              dialogType: DialogType.question,
-                              animType: AnimType.bottomSlide,
-                              title: 'Cancel Meeting',
-                              desc:
-                                  'Are you sure you want to cancel this meeting?',
-                              btnOkOnPress: () {
-                                deleteRequest(request);
-                                AwesomeDialog(
-                                  context: context,
-                                  dialogType: DialogType.info,
-                                  animType: AnimType.rightSlide,
-                                  title: 'Meeting Cancelled',
-                                ).show();
-                              },
-                              btnCancelOnPress: () {},
-                            ).show();
-                          },
-                        )
-                      : Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: backgroundColor,
+                      border: Border(bottom: BorderSide(color: borderColor)),
+                    ),
+                    child: ListTile(
+                      title: Text(
+                        request.name,
+                        style: TextStyle(color: textColor),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            DateFormat('MMMM d, yyyy')
+                                .format(request.date.toDate().toLocal()),
+                            style: TextStyle(color: textColor),
+                          ),
+                          Text(
+                              DateFormat('hh:mm a')
+                                  .format(request.date.toDate().toLocal()),
+                              style: TextStyle(color: textColor)),
+                        ],
+                      ),
+                      trailing: isCreatedByCurrentUser
+                          ? IconButton(
                               icon: const Icon(Icons.close, color: Colors.red),
                               onPressed: () {
                                 AwesomeDialog(
@@ -490,37 +507,65 @@ class RequestsScreenState extends State<RequestsScreen> {
                                   btnCancelOnPress: () {},
                                 ).show();
                               },
-                            ),
-                            IconButton(
-                              icon:
-                                  const Icon(Icons.check, color: Colors.green),
-                              onPressed: () {
-                                AwesomeDialog(
-                                  context: context,
-                                  dialogType: DialogType.question,
-                                  animType: AnimType.bottomSlide,
-                                  title: 'Confirm Meeting',
-                                  desc:
-                                      'Are you sure you want to accept this meeting?',
-                                  btnOkOnPress: () {
-                                    acceptRequest(request);
+                            )
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.close,
+                                      color: Colors.red),
+                                  onPressed: () {
                                     AwesomeDialog(
                                       context: context,
-                                      dialogType: DialogType.info,
-                                      animType: AnimType.rightSlide,
-                                      title: 'Meeting Accepted',
+                                      dialogType: DialogType.question,
+                                      animType: AnimType.bottomSlide,
+                                      title: 'Cancel Meeting',
+                                      desc:
+                                          'Are you sure you want to cancel this meeting?',
+                                      btnOkOnPress: () {
+                                        deleteRequest(request);
+                                        AwesomeDialog(
+                                          context: context,
+                                          dialogType: DialogType.info,
+                                          animType: AnimType.rightSlide,
+                                          title: 'Meeting Cancelled',
+                                        ).show();
+                                      },
+                                      btnCancelOnPress: () {},
                                     ).show();
                                   },
-                                  btnCancelOnPress: () {},
-                                ).show();
-                              },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.check,
+                                      color: Colors.green),
+                                  onPressed: () {
+                                    AwesomeDialog(
+                                      context: context,
+                                      dialogType: DialogType.question,
+                                      animType: AnimType.bottomSlide,
+                                      title: 'Confirm Meeting',
+                                      desc:
+                                          'Are you sure you want to accept this meeting?',
+                                      btnOkOnPress: () {
+                                        acceptRequest(request);
+                                        AwesomeDialog(
+                                          context: context,
+                                          dialogType: DialogType.info,
+                                          animType: AnimType.rightSlide,
+                                          title: 'Meeting Accepted',
+                                        ).show();
+                                      },
+                                      btnCancelOnPress: () {},
+                                    ).show();
+                                  },
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                );
-              },
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
         ],
       ),
     );
