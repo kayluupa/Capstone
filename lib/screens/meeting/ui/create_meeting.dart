@@ -74,13 +74,14 @@ class CreateMeetingState extends State<CreateMeeting> {
   }
 
   Future<void> createMeeting(VoidCallback popCallback) async {
-    DateTime utcDate = widget.day.toUtc();
-    utcDate = DateTime(
-        utcDate.year,
-        utcDate.month,
-        utcDate.day,
-        selectedTime?.hour ?? utcDate.hour,
-        selectedTime?.minute ?? utcDate.minute);
+    DateTime localDate = widget.day;
+    DateTime utcDate = DateTime(
+      localDate.year,
+      localDate.month,
+      localDate.day,
+      selectedTime?.hour ?? localDate.hour,
+      selectedTime?.minute ?? localDate.minute,
+    ).toUtc();
     DateTime convertedDate =
         tz.TZDateTime.from(utcDate, tz.getLocation('America/Chicago'));
     String date = DateFormat('MM/dd/yy').format(convertedDate);
@@ -109,7 +110,7 @@ class CreateMeetingState extends State<CreateMeeting> {
         'fromRequestId': initRef.id,
         'toUserId': selectedUserId,
         'toRequestId': selRef.id,
-        'date': date,
+        'date': utcDate,
         'lat': null,
         'lng': null,
         'location': null,
