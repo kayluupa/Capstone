@@ -272,16 +272,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 firstDay: DateTime.utc(2024, 1, 1),
                 lastDay: DateTime.utc(2024, 12, 31),
                 onDaySelected: _onDaySelected,
-                calendarStyle: CalendarStyle(
-                  todayDecoration: BoxDecoration(
-                    color: Color(0xFF227CFF), 
-                    shape: BoxShape.circle,    
-                  ),
-                  todayTextStyle: const TextStyle(
-                    color: Colors.white,       
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 16.0),
