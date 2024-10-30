@@ -97,7 +97,8 @@ class SettingsScreenState extends State<SettingsScreen> {
           ),
           SwitchListTile(
             title: const Text('Dark Mode'),
-            value: _isDarkMode,
+            value: _isDarkMode, // Your variable for dark mode
+            activeColor: Color(0xFF227CFF), // Set active color to blue
             onChanged: (bool value) {
               setState(() {
                 _isDarkMode = value;

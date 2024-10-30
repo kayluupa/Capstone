@@ -72,8 +72,7 @@ class _HelpScreenState extends State<HelpScreen> {
               child: ElevatedButton(
                 onPressed: _sendEmail,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromARGB(
-                      255, 124, 33, 243), // Match the purple color
+                  backgroundColor: Color(0xFF227CFF), // Match the blue color
                   foregroundColor: Colors.white,
                 ),
                 child: const Text('Send Email'),

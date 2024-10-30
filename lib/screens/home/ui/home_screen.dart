@@ -168,10 +168,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Meet Me Halfway',
-          textAlign: TextAlign.center,
-        ),
+        //title: const Text(
+        //  'Meet Me Halfway',
+        //  textAlign: TextAlign.center,
+        //),
         centerTitle: true,
         actions: [
           IconButton(
@@ -186,34 +186,30 @@ class _HomeScreenState extends State<HomeScreen> {
           children: <Widget>[
             DrawerHeader(
               decoration: const BoxDecoration(
-                color: Color.fromARGB(255, 124, 33, 243),
+                color: Color(0xFF227CFF), //blue color for button match
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Stack(
                 children: [
-                  const Text(
-                    'Get Connected!',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: const Text(
+                      'Meet Me Halfway',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                      ),
                     ),
                   ),
-                  const Spacer(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        'assets/girl.png',
-                        height: 100,
-                        fit: BoxFit.contain,
+                  Align(
+                    alignment: Alignment.bottomRight, 
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0, right: 7.0),
+                      child: Image.asset(
+                        'assets/mmhwlogo.png', 
+                        height: 80, 
+                        width: 80,
                       ),
-                      const SizedBox(width: 10),
-                      Image.asset(
-                        'assets/guy.png',
-                        height: 100,
-                        fit: BoxFit.contain,
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -276,6 +272,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 firstDay: DateTime.utc(2024, 1, 1),
                 lastDay: DateTime.utc(2024, 12, 31),
                 onDaySelected: _onDaySelected,
+                calendarStyle: CalendarStyle(
+                  todayDecoration: BoxDecoration(
+                    color: Color(0xFF227CFF), 
+                    shape: BoxShape.circle,    
+                  ),
+                  todayTextStyle: const TextStyle(
+                    color: Colors.white,       
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 16.0),

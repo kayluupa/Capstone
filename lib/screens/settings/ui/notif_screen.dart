@@ -50,6 +50,7 @@ class NotifScreenState extends State<NotifScreen> {
             SwitchListTile(
               title: const Text('Enable Push Notifications'),
               value: _pushNotification,
+              activeColor: Color(0xFF227CFF),
               onChanged: (bool value) {
                 setState(() {
                   _pushNotification = value;
@@ -61,6 +62,7 @@ class NotifScreenState extends State<NotifScreen> {
             SwitchListTile(
               title: const Text('Enable Email Notifications'),
               value: _emailNotification,
+              activeColor: Color(0xFF227CFF),
               onChanged: (bool value) {
                 setState(() {
                   _emailNotification = value;

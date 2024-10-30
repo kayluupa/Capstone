@@ -109,7 +109,7 @@ class _AccountScreenState extends State<AccountScreen> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
                     child: CircularProgressIndicator(
-                  color: Color.fromARGB(255, 124, 33, 243),
+                  color: Color(0xFF227CFF),
                 ));
               } else if (snapshot.hasError) {
                 return const CircularProgressIndicator();
@@ -141,10 +141,14 @@ class _AccountScreenState extends State<AccountScreen> {
                           ),
                         ),
                         const SizedBox(width: 16),
-                        ElevatedButton(
-                          onPressed: _uploadImage,
-                          child: const Text('Change Picture'),
-                        ),
+                          ElevatedButton(
+                            onPressed: _uploadImage,
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Color(0xFF227CFF), // Set text color to blue
+                              backgroundColor: Colors.white, // Optional: set button background to white for contrast
+                            ),
+                            child: const Text('Change Picture'),
+                          ),
                       ],
                     ),
                     const Gap(20),
@@ -194,7 +198,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
-                                const Color.fromARGB(255, 124, 33, 243),
+                                const Color(0xFF227CFF),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),

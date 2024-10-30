@@ -9,7 +9,6 @@ class TandCScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Terms and Conditions'),
-        backgroundColor: const Color.fromARGB(255, 124, 33, 243),
       ),
       body: const Padding(
         padding: EdgeInsets.all(16.0),
