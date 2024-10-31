@@ -136,11 +136,18 @@ class MeetingScreenState extends State<MeetingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(DateFormat('EEEE, MMMM d, yyyy').format(widget.day)),
+        title: Text(
+          DateFormat('EEEE, MMMM d, yyyy').format(widget.day),
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context, true);
+            Navigator.pushNamed(
+              context,
+              Routes.homeScreen,
+            );
           },
         ),
       ),

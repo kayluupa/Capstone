@@ -297,7 +297,17 @@ class CreateMeetingState extends State<CreateMeeting> {
                         );
                         await createMeeting(() {
                           Navigator.pop(context);
-                          Navigator.pop(context);
+
+                          AwesomeDialog(
+                            context: context,
+                            dialogType: DialogType.info,
+                            animType: AnimType.rightSlide,
+                            title: 'Meeting Request Sent',
+                            btnOkText: 'Close',
+                            btnOkOnPress: () {
+                              Navigator.pop(context);
+                            },
+                          ).show();
                         });
                       } catch (e) {
                         showErrorMessage(

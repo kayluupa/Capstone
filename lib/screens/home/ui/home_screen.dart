@@ -135,6 +135,15 @@ class _HomeScreenState extends State<HomeScreen> {
     ).show();
   }
 
+  void showCancelMessage() async {
+    await AwesomeDialog(
+      context: context,
+      dialogType: DialogType.info,
+      animType: AnimType.rightSlide,
+      title: 'Meeting Cancelled',
+    ).show();
+  }
+
   void deleteMeeting(Meeting meeting) async {
     try {
       await FirebaseFirestore.instance
@@ -152,6 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
           .delete();
 
       fetchUpcomingMeetings();
+      showCancelMessage();
     } catch (e) {
       showErrorMessage(e.toString());
     }
@@ -168,10 +178,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        //title: const Text(
-        //  'Meet Me Halfway',
-        //  textAlign: TextAlign.center,
-        //),
+        title: const Text(
+          'Home',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         actions: [
           IconButton(
@@ -257,6 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _homePage(BuildContext context) {
+    int currentYear = today.year;
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 15.w),
@@ -266,27 +277,44 @@ class _HomeScreenState extends State<HomeScreen> {
               TableCalendar(
                 locale: "en_US",
                 headerStyle: const HeaderStyle(
-                    formatButtonVisible: false, titleCentered: true),
+                  formatButtonVisible: false,
+                  titleCentered: true,
+                  titleTextStyle: TextStyle(fontSize: 24),
+                ),
                 selectedDayPredicate: (day) => isSameDay(day, today),
                 focusedDay: today,
-                firstDay: DateTime.utc(2024, 1, 1),
-                lastDay: DateTime.utc(2024, 12, 31),
+                firstDay: DateTime.utc(currentYear, 1, 1),
+                lastDay: DateTime.utc(currentYear, 12, 31),
                 onDaySelected: _onDaySelected,
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 16.0),
-                child: Text(
-                  "To start a request to meet-up just click on your desired date!",
-                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                  textAlign: TextAlign.center,
+              if (upcomingMeetings.isEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.only(top: 24.0),
+                  child: Text(
+                    "No Current Meetings",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[700],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-              ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    "To start a request to meet-up, just click on your desired date!",
+                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
               if (upcomingMeetings.isNotEmpty) ...[
                 const Padding(
-                  padding: EdgeInsets.only(top: 16.0),
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
                   child: Text(
                     "Upcoming Meetings:",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 24),
                   ),
                 ),
                 ListView.builder(
@@ -295,82 +323,81 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemCount: upcomingMeetings.length,
                   itemBuilder: (context, index) {
                     final meeting = upcomingMeetings[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 8.0, horizontal: 16.0),
-                      elevation: 3,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    meeting.name,
-                                    style: const TextStyle(
-                                      fontSize: 18.0,
-                                      fontWeight: FontWeight.bold,
+                    return GestureDetector(
+                      onTap: () {
+                        _navigateToMeetingScreen(meeting.date.toDate());
+                      },
+                      child: Card(
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 16.0),
+                        elevation: 3,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      meeting.name,
+                                      style: const TextStyle(
+                                        fontSize: 18.0,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
+                                    const SizedBox(height: 4.0),
+                                    Text(
+                                      '${DateFormat('MMMM d, yyyy').format(meeting.date.toDate().toLocal())} - ${DateFormat('hh:mm a').format(meeting.date.toDate().toLocal())}',
+                                      style: const TextStyle(fontSize: 16.0),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.close,
+                                        color: Colors.red),
+                                    onPressed: () {
+                                      AwesomeDialog(
+                                        context: context,
+                                        dialogType: DialogType.question,
+                                        animType: AnimType.bottomSlide,
+                                        title: 'Cancel Meeting',
+                                        desc:
+                                            'Are you sure you want to cancel this meeting?',
+                                        btnOkOnPress: () {
+                                          deleteMeeting(meeting);
+                                        },
+                                        btnCancelOnPress: () {},
+                                      ).show();
+                                    },
                                   ),
-                                  const SizedBox(height: 4.0),
-                                  Text(
-                                    '${DateFormat('MMMM d, yyyy').format(meeting.date.toDate().toLocal())} - ${DateFormat('hh:mm a').format(meeting.date.toDate().toLocal())}',
-                                    style: const TextStyle(fontSize: 16.0),
+                                  IconButton(
+                                    icon: const Icon(Icons.map),
+                                    onPressed: () {
+                                      Navigator.pushNamed(
+                                        context,
+                                        Routes.mapScreen,
+                                        arguments: {
+                                          'latitude': meeting.lat,
+                                          'longitude': meeting.lng,
+                                        },
+                                      );
+                                    },
                                   ),
                                 ],
                               ),
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.close,
-                                      color: Colors.red),
-                                  onPressed: () {
-                                    AwesomeDialog(
-                                      context: context,
-                                      dialogType: DialogType.question,
-                                      animType: AnimType.bottomSlide,
-                                      title: 'Cancel Meeting',
-                                      desc:
-                                          'Are you sure you want to cancel this meeting?',
-                                      btnOkOnPress: () {
-                                        deleteMeeting(meeting);
-                                        AwesomeDialog(
-                                          context: context,
-                                          dialogType: DialogType.info,
-                                          animType: AnimType.rightSlide,
-                                          title: 'Meeting Cancelled',
-                                        ).show();
-                                      },
-                                      btnCancelOnPress: () {},
-                                    ).show();
-                                  },
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.map),
-                                  onPressed: () {
-                                    Navigator.pushNamed(
-                                      context,
-                                      Routes.mapScreen,
-                                      arguments: {
-                                        'latitude': meeting.lat,
-                                        'longitude': meeting.lng,
-                                      },
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     );
                   },
-                )
+                ),
               ],
             ],
           ),
