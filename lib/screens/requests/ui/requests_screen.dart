@@ -192,117 +192,111 @@ class RequestsScreenState extends State<RequestsScreen> {
   }
 
   void acceptRequest(MeetingRequest request) async {
-    final newLocation = _locationController.text;
-
-    if (newLocation.isNotEmpty) {
-      DocumentSnapshot<Map<String, dynamic>> fromRequestDoc =
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(request.fromUserId)
-              .collection('requests')
-              .doc(request.fromRequestId)
-              .get();
-
-      double fromLat = fromRequestDoc.data()?['lat'] ?? 0.0;
-      double fromLng = fromRequestDoc.data()?['lng'] ?? 0.0;
-
-      LatLng midpoint = _calculateMidpoint(
-          LatLng(fromLat, fromLng), LatLng(_latitude, _longitude));
-
-      final initFromRef = FirebaseFirestore.instance
-          .collection('users')
-          .doc(request.fromUserId)
-          .collection('meetings')
-          .doc();
-
-      final initToRef = FirebaseFirestore.instance
-          .collection('users')
-          .doc(request.toUserId)
-          .collection('meetings')
-          .doc();
-
-      final meetingData = {
-        'fromUserId': request.fromUserId,
-        'fromRequestId': initFromRef.id,
-        'toUserId': request.toUserId,
-        'toRequestId': initToRef.id,
-        'name': null,
-        'date': request.date,
-        'lat': midpoint.latitude,
-        'lng': midpoint.longitude,
-      };
-
-      await initFromRef.set(meetingData);
-      await initToRef.set(meetingData);
-
-      try {
-        final fromUserDoc = await FirebaseFirestore.instance
+    DocumentSnapshot<Map<String, dynamic>> fromRequestDoc =
+        await FirebaseFirestore.instance
             .collection('users')
             .doc(request.fromUserId)
+            .collection('requests')
+            .doc(request.fromRequestId)
             .get();
 
-        final toUserDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(request.toUserId)
-            .get();
+    double fromLat = fromRequestDoc.data()?['lat'] ?? 0.0;
+    double fromLng = fromRequestDoc.data()?['lng'] ?? 0.0;
 
-        if (toUserDoc.exists) {
-          await initFromRef.update({'name': toUserDoc['name']});
-        }
+    LatLng midpoint = _calculateMidpoint(
+        LatLng(fromLat, fromLng), LatLng(_latitude, _longitude));
 
-        if (fromUserDoc.exists) {
-          await initToRef.update({'name': fromUserDoc['name']});
+    final initFromRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(request.fromUserId)
+        .collection('meetings')
+        .doc();
 
-          final token = await FirebaseFirestore.instance
-              .collection('users')
-              .doc(request.fromUserId)
-              .collection('tokens')
-              .doc('t1')
-              .get()
-              .then((doc) => doc['token']);
+    final initToRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(request.toUserId)
+        .collection('meetings')
+        .doc();
 
-          DateTime utcDate = request.date.toDate();
-          tz.TZDateTime convertedDate = tz.TZDateTime.from(utcDate.toUtc(), tz.getLocation('America/Chicago'));
-          String date = DateFormat('MM/dd/yy').format(convertedDate);
-          String time = DateFormat('hh:mm a').format(convertedDate);
+    final meetingData = {
+      'fromUserId': request.fromUserId,
+      'fromRequestId': initFromRef.id,
+      'toUserId': request.toUserId,
+      'toRequestId': initToRef.id,
+      'name': null,
+      'date': request.date,
+      'lat': midpoint.latitude,
+      'lng': midpoint.longitude,
+    };
 
-          if (fromUserDoc['push notification'] == true) {
-            pushNotifs.sendPushMessage(
-                token,
-                'Meeting Accepted by ${toUserDoc['name']}',
-                'Meeting on $date - $time Central Time',
-                request.date,
-                'meeting_screen');
-          }
+    await initFromRef.set(meetingData);
+    await initToRef.set(meetingData);
 
-          if (fromUserDoc['email notification'] == true) {
-            final String username = dotenv.env['GROUP_EMAIL'] ?? '';
-            final smtpServer =
-                gmail(username, dotenv.env['GROUP_PASSWORD'] ?? '');
+    try {
+      final fromUserDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(request.fromUserId)
+          .get();
 
-            final message = Message()
-              ..from = Address(username, 'Meet Me Halfway')
-              ..recipients.add(fromUserDoc['email'])
-              ..subject = 'New Meeting'
-              ..text =
-                  'Meeting accepted by ${toUserDoc['name']} for $date - $time Central Time';
+      final toUserDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(request.toUserId)
+          .get();
 
-            try {
-              await send(message, smtpServer);
-            } catch (e) {
-              showErrorMessage('Email not sent.');
-            }
-          }
-        }
-      } catch (e) {
-        showErrorMessage(e.toString());
+      if (toUserDoc.exists) {
+        await initFromRef.update({'name': toUserDoc['name']});
       }
 
-      deleteRequest(request);
-      fetchAllRequests();
-    } else {
-      showErrorMessage('Please enter a location.');
+      if (fromUserDoc.exists) {
+        await initToRef.update({'name': fromUserDoc['name']});
+
+        final token = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(request.fromUserId)
+            .collection('tokens')
+            .doc('t1')
+            .get()
+            .then((doc) => doc['token']);
+
+        DateTime utcDate = request.date.toDate();
+        tz.TZDateTime convertedDate = tz.TZDateTime.from(
+            utcDate.toUtc(), tz.getLocation('America/Chicago'));
+        String date = DateFormat('MM/dd/yy').format(convertedDate);
+        String time = DateFormat('hh:mm a').format(convertedDate);
+
+        if (fromUserDoc['push notification'] == true) {
+          pushNotifs.sendPushMessage(
+              token,
+              'Meeting Accepted by ${toUserDoc['name']}',
+              'Meeting on $date - $time Central Time',
+              request.date,
+              'meeting_screen');
+        }
+
+        if (fromUserDoc['email notification'] == true) {
+          final String username = dotenv.env['GROUP_EMAIL'] ?? '';
+          final smtpServer =
+              gmail(username, dotenv.env['GROUP_PASSWORD'] ?? '');
+
+          final message = Message()
+            ..from = Address(username, 'Meet Me Halfway')
+            ..recipients.add(fromUserDoc['email'])
+            ..subject = 'New Meeting'
+            ..text =
+                'Meeting accepted by ${toUserDoc['name']} for $date - $time Central Time';
+
+          try {
+            await send(message, smtpServer);
+          } catch (e) {
+            showErrorMessage('Email not sent.');
+          }
+        }
+      }
+    } catch (e) {
+      showErrorMessage(e.toString());
     }
+
+    deleteRequest(request);
   }
 
   void deleteRequest(MeetingRequest request) async {
@@ -379,7 +373,11 @@ class RequestsScreenState extends State<RequestsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Meeting Requests'),
+        title: const Text(
+          'Requests',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -539,24 +537,32 @@ class RequestsScreenState extends State<RequestsScreen> {
                                   icon: const Icon(Icons.check,
                                       color: Colors.green),
                                   onPressed: () {
-                                    AwesomeDialog(
-                                      context: context,
-                                      dialogType: DialogType.question,
-                                      animType: AnimType.bottomSlide,
-                                      title: 'Confirm Meeting',
-                                      desc:
-                                          'Are you sure you want to accept this meeting?',
-                                      btnOkOnPress: () {
-                                        acceptRequest(request);
-                                        AwesomeDialog(
-                                          context: context,
-                                          dialogType: DialogType.info,
-                                          animType: AnimType.rightSlide,
-                                          title: 'Meeting Accepted',
-                                        ).show();
-                                      },
-                                      btnCancelOnPress: () {},
-                                    ).show();
+                                    final newLocation =
+                                        _locationController.text;
+                                    if (newLocation.isNotEmpty) {
+                                      AwesomeDialog(
+                                        context: context,
+                                        dialogType: DialogType.question,
+                                        animType: AnimType.bottomSlide,
+                                        title: 'Confirm Meeting',
+                                        desc:
+                                            'Are you sure you want to accept this meeting?',
+                                        btnOkOnPress: () {
+                                          acceptRequest(request);
+                                          AwesomeDialog(
+                                            context: context,
+                                            dialogType: DialogType.info,
+                                            animType: AnimType.rightSlide,
+                                            title: 'Meeting Accepted',
+                                          ).show();
+                                          fetchAllRequests();
+                                        },
+                                        btnCancelOnPress: () {},
+                                      ).show();
+                                    } else {
+                                      showErrorMessage(
+                                          'Please enter a location.');
+                                    }
                                   },
                                 ),
                               ],
