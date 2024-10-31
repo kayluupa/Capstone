@@ -170,6 +170,7 @@ class MeetingScreenState extends State<MeetingScreen> {
                 label: const Text("Add Meeting"),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  foregroundColor: Color(0xFF227CFF),
                 ),
               ),
             ),

@@ -304,6 +304,9 @@ class CreateMeetingState extends State<CreateMeeting> {
                             'Failed to create the meeting. Please try again.');
                       }
                     },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Color(0xFF227CFF),
+                    ),
                     child: const Text('Create Meeting'),
                   ),
                 ],
