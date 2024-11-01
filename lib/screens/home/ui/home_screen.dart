@@ -185,8 +185,10 @@ class _HomeScreenState extends State<HomeScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {},
+            icon: const Icon(Icons.send),
+            onPressed: () {
+              _navigateToMeetingScreen(today);
+            },
           ),
         ],
       ),
@@ -286,6 +288,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 firstDay: DateTime.utc(currentYear, 1, 1),
                 lastDay: DateTime.utc(currentYear, 12, 31),
                 onDaySelected: _onDaySelected,
+                calendarStyle: CalendarStyle(
+                  selectedDecoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 76, 93, 247), // Change this to any color you want
+                    shape: BoxShape.circle,
+                  ),
+                  todayDecoration: BoxDecoration(
+                    color: Color(0xFF227CFF), // Customize today's date color as needed
+                    shape: BoxShape.circle,
+                  ),
+                ),
               ),
               if (upcomingMeetings.isEmpty) ...[
                 Padding(
