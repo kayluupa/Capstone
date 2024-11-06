@@ -12,6 +12,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'dart:convert';
 import 'dart:math';
 import '../../../helpers/firebase_msg.dart' as firebase_msg;
+import '../../../helpers/current_location.dart' as current_location;
 import '/routing/routes.dart';
 
 class User {
@@ -191,6 +192,18 @@ class RequestsScreenState extends State<RequestsScreen> {
     ).show();
   }
 
+  Future<void> _fetchUserLocation() async {
+    try {
+      final position = await current_location.determinePosition();
+      setState(() {
+        _latitude = position.latitude;
+        _longitude = position.longitude;
+      });
+    } catch (e) {
+      showErrorMessage('Failed to retrieve location. Please try again.');
+    }
+  }
+
   void acceptRequest(MeetingRequest request) async {
     DocumentSnapshot<Map<String, dynamic>> fromRequestDoc =
         await FirebaseFirestore.instance
@@ -325,7 +338,7 @@ class RequestsScreenState extends State<RequestsScreen> {
   }
 
   Future<void> searchPlaces(String query) async {
-    String apiKey = "AIzaSyDizaB7QZXvI6NY2ppGrbFemKAeZNcGSvc";
+    String apiKey = dotenv.env['API_KEY'] ?? '';
     String url =
         'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$query&types=geocode&key=$apiKey';
     var response = await http.get(Uri.parse(url));
@@ -333,32 +346,43 @@ class RequestsScreenState extends State<RequestsScreen> {
       var data = json.decode(response.body);
       if (data['status'] == 'OK') {
         setState(() {
-          searchResults = (data['predictions'] as List)
-              .map((place) => Place(
-                    placeId: place['place_id'],
-                    description: place['description'],
-                  ))
-              .toList();
+          searchResults = [
+            Place(
+              placeId: 'your_location',
+              description: 'Your Location',
+            ),
+            ...(data['predictions'] as List).map((place) => Place(
+                  placeId: place['place_id'],
+                  description: place['description'],
+                )),
+          ];
         });
       }
     }
   }
 
   Future<void> selectPlace(String placeId) async {
-    String apiKey = 'AIzaSyDizaB7QZXvI6NY2ppGrbFemKAeZNcGSvc';
-    String url =
-        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=geometry&key=$apiKey';
-    var response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      var data = json.decode(response.body);
-      if (data['status'] == 'OK') {
-        var location = data['result']['geometry']['location'];
-        double lat = location['lat'];
-        double lng = location['lng'];
-        setState(() {
-          _latitude = lat;
-          _longitude = lng;
-        });
+    if (placeId == 'your_location') {
+      _fetchUserLocation();
+      setState(() {
+        _locationController.text = 'Your Location';
+      });
+    } else {
+      String apiKey = dotenv.env['API_KEY'] ?? '';
+      String url =
+          'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=geometry&key=$apiKey';
+      var response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        if (data['status'] == 'OK') {
+          var location = data['result']['geometry']['location'];
+          double lat = location['lat'];
+          double lng = location['lng'];
+          setState(() {
+            _latitude = lat;
+            _longitude = lng;
+          });
+        }
       }
     }
   }
