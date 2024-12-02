@@ -10,5 +10,4 @@ Malik Karunanayake - GivaX
 Marlen Carreno - marlencarreno
 Mohammad Saleh - moesy99
 Dan Bui - ddb0240
-Zain Jamal - zainjamal45
 ```
